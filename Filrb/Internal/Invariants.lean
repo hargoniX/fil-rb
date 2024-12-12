@@ -1,12 +1,20 @@
 import Filrb.Internal.Raw
 import Filrb.Internal.Mem
 
+/-!
+This module defines the red black tree invariants and proves that the mutating operations on
+red black trees preserve these invariants.
+-/
+
 namespace Filrb
 namespace Internal
 namespace Raw
 
 variable [LinearOrder α]
 
+/--
+A tree is a binary search tree.
+-/
 inductive BST : Raw α → Prop where
   | nil : BST .nil
   | node (hleft : ∀ x ∈ left, x < data) (hright : ∀ x ∈ right, data < x) : BST (.node left data color right)
@@ -14,11 +22,17 @@ inductive BST : Raw α → Prop where
 theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := sorry
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := sorry
 
+/--
+Fetch the color of the root of `t`.
+-/
 def rootColor (t : Raw α) : Color :=
   match t with
   | .nil => .black
   | .node _ _ c _ => c
 
+/--
+The child invariant for red black trees: Red nodes must have black children.
+-/
 inductive ChildInv : Raw α → Prop where
   | nil : ChildInv .nil
   | black (hleft : ChildInv left) (hright : ChildInv right) : ChildInv (.node left data .black right)
@@ -36,6 +50,14 @@ def blackHeightLeft (t : Raw α) : Nat :=
     | .black => blackHeightLeft left + 1
     | .red => blackHeightLeft left
 
+/--
+The height invariant for red black trees: Every path from a given node to any of its leaves goes
+through the same number of black nodes.
+
+The particular variant here is based on
+[Functional Algorithms Verified](https://functional-algorithms-verified.org/functional_data_structures_algorithms.pdf)
+and uses a sufficient condition instead of directly encoding the above.
+-/
 inductive HeightInv : Raw α → Prop where
   | nil : HeightInv .nil
   | node (hleft : HeightInv left) (hright : HeightInv right)
