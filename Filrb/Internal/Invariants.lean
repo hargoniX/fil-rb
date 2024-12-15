@@ -55,7 +55,8 @@ A tree is a binary search tree.
 -/
 inductive BST : Raw α → Prop where
   | nil : BST .nil
-  | node (hleft : ∀ x ∈ left, x < data) (hright : ∀ x ∈ right, data < x) : BST (.node left data color right)
+  | node (hleft1 : ∀ x ∈ left, x < data) (hleft2 : BST left)
+         (hright1 : ∀ x ∈ right, data < x) (hright2 : BST right) : BST (.node left data color right)
 
 theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := sorry
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := sorry
