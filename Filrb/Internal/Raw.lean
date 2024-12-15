@@ -61,6 +61,17 @@ Check whether `d` is contained within `t`.
 -/
 def contains (t : Raw α) (d : α) : Bool := sorry
 
+/--
+`x` is a member of a red black tree.
+-/
+inductive Mem (x : α) : Raw α → Prop where
+  | here : Mem x (.node left x color right)
+  | left (hleft : Mem x left) : Mem x (.node left y color right)
+  | right (hright : Mem x right) : Mem x (.node left y color right)
+
+instance : Membership α (Raw α) where
+  mem t x := Mem x t
+
 end Raw
 
 end Internal

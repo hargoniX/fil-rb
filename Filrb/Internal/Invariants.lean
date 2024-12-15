@@ -1,5 +1,4 @@
 import Filrb.Internal.Raw
-import Filrb.Internal.Mem
 
 /-!
 This module defines the red black tree invariants and proves that the mutating operations on
