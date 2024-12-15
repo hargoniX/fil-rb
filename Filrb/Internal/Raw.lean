@@ -1,4 +1,7 @@
 import Mathlib.Order.Defs.LinearOrder
+import Mathlib.Data.Ordering.Basic
+import Mathlib.Order.Compare
+
 
 /-!
 This module defines the raw red black tree data structure and the basic operations on it.
@@ -22,7 +25,13 @@ FBIP usage, consider the following alternative definitions:
 namespace Filrb
 namespace Internal
 
-variable [LinearOrder α]
+class LawfulOrd (α : Type u) [LT α] [Ord α] where
+  compares : ∀ (a b : α), (compare a b).Compares a b
+
+instance [Preorder α] [Ord α] [LawfulOrd α] : LinearOrder α :=
+  linearOrderOfCompares compare LawfulOrd.compares
+
+variable [Preorder α] [Ord α] [LawfulOrd α]
 
 /--
 Colors of red black tree nodes.
