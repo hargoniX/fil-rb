@@ -68,7 +68,14 @@ def erase (t : Raw α) (d : α) : Raw α := sorry
 /--
 Check whether `d` is contained within `t`.
 -/
-def contains (t : Raw α) (d : α) : Bool := sorry
+def contains (t : Raw α) (d : α) : Bool :=
+  match t with
+  | .nil => false
+  | .node left data _ right =>
+    match compare d data with
+    | .lt => left.contains d
+    | .eq => true
+    | .gt => right.contains d
 
 /--
 `x` is a member of a red black tree.
