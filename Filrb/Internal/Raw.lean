@@ -77,6 +77,20 @@ def contains (t : Raw α) (d : α) : Bool :=
     | .eq => true
     | .gt => right.contains d
 
+def inorder : Raw α →  List α
+| Raw.nil => []
+| Raw.node l x c r => inorder l ++ [x] ++ inorder r
+
+def inorder2 : Raw α → List α → List α
+| Raw.nil, l => l
+| Raw.node l x c r, xs => inorder2 l <| x :: inorder2 r xs
+
+example : inorder2 t xs = inorder t ++ xs := by
+  induction t generalizing xs with
+  | nil => simp [inorder2, inorder]
+  | node l x c r ihl ihr => simp [inorder2, inorder, ihl, ihr]
+
+#eval inorder (Raw.node Raw.nil 1 Color.black (Raw.node Raw.nil 2 Color.red Raw.nil))
 /--
 `x` is a member of a red black tree.
 -/
