@@ -91,6 +91,51 @@ example : inorder2 t xs = inorder t ++ xs := by
   | node _ _ _ _ ihl ihr => simp [inorder2, inorder, ihl, ihr]
 
 /--
+Transform a tree into a graphviz compatible format.
+-/
+def toGraphviz {α : Type} [BEq α] [ToString α] [Hashable α] (t : Raw α) : String :=
+  let ⟨graph, _⟩ := go "" 1 t
+  "Digraph tree {\n  node [style=filled];" ++ graph ++ "\n}"
+where
+  go {α : Type} [ToString α] (acc : String) (idx : Nat) (t : Raw α) : String × Nat :=
+    match t  with
+    | Raw.nil =>
+      ⟨acc ++ s!"\n  {idx} [shape=point];", idx⟩
+    | Raw.node l x c r =>
+      let node := s!"\n  {idx} [label=\"{x}\",{colorEdgeStyle c}, shape=circle];"
+      let ⟨lnode, lidx⟩ := go "" (idx+1) l
+      let ⟨rnode, ridx⟩ := go "" (lidx+1) r
+      let edges := s!"\n  {idx} -> {idx+1} [label=\"l\"];\n  {idx} -> {lidx+1} [label=\"r\"];"
+      ⟨acc ++ node ++ lnode ++ rnode ++ edges, ridx⟩
+  colorEdgeStyle : Color → String
+    | .red => " color=red"
+    | .black => " color=grey"
+
+/--
+Transform a tree into a graphviz compatible format without explicit leafs.
+-/
+def toGraphviz2 {α : Type} [BEq α] [ToString α] [Hashable α] (t : Raw α) : String :=
+  let graph := go "" t
+  "Digraph tree {\n  node [style=filled];" ++ graph ++ "\n}"
+where
+  go {α : Type} [ToString α] (acc : String) (t : Raw α) : String :=
+    match t  with
+    | Raw.nil => acc
+    | Raw.node l x c r =>
+      let node := s!"\n  {x} [label=\"{x}\",{colorEdgeStyle c}, shape=circle];"
+      let ledge := graphEdge x "l" l
+      let redge := graphEdge x "r" r
+      let lnode := go "" l
+      let rnode := go "" r
+      acc ++ node ++ lnode ++ rnode ++ ledge ++ redge
+  colorEdgeStyle : Color → String
+    | .red => " color=red"
+    | .black => " color=grey"
+  graphEdge {α : Type} [ToString α] (parentVal : α) (label : String) : Raw α → String
+    | .nil => ""
+    | .node _ x _ _ => s!"\n  {parentVal} -> {x} [label=\"{label}\"];"
+
+/--
 `x` is a member of a red black tree.
 -/
 inductive Mem (x : α) : Raw α → Prop where
