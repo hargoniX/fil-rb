@@ -91,6 +91,31 @@ example : inorder2 t xs = inorder t ++ xs := by
   | node l x c r ihl ihr => simp [inorder2, inorder, ihl, ihr]
 
 #eval inorder (Raw.node Raw.nil 1 Color.black (Raw.node Raw.nil 2 Color.red Raw.nil))
+
+/--
+Transform a tree into a graphviz compatible format.
+-/
+def toGraphviz {α : Type} [BEq α] [ToString α] [Hashable α] (t : Raw α) : String :=
+  let ⟨graph, _⟩ := go "" 1 t
+  "Digraph tree {\n  node [style=filled];" ++ graph ++ "\n}"
+where
+  go {α : Type} [ToString α] (acc : String) (idx : Nat) (t : Raw α) : String × Nat :=
+    match t  with
+    | Raw.nil =>
+      ⟨acc ++ s!"\n  {idx} [shape=point];", idx⟩
+    | Raw.node l x c r =>
+      let node := s!"\n  {idx} [label=\"{x}\",{colorEdgeStyle c}, shape=circle];"
+      let ⟨lnode, lidx⟩ := go "" (idx+1) l
+      let ⟨rnode, ridx⟩ := go "" (lidx+1) r
+      let edges := s!"\n  {idx} -> {idx+1} [label=\"l\"];\n  {idx} -> {lidx+1} [label=\"r\"];"
+      ⟨acc ++ node ++ lnode ++ rnode ++ edges, ridx⟩
+  colorEdgeStyle : Color → String
+    | .red => " color=red"
+    | .black => " color=grey"
+
+#eval toGraphviz (Raw.node Raw.nil 4 Color.black (Raw.node Raw.nil 8 Color.red Raw.nil))
+#eval IO.FS.writeFile "tree.gv" <| Raw.toGraphviz (Raw.node Raw.nil 5 Color.black (Raw.node Raw.nil 7 Color.red Raw.nil))
+
 /--
 `x` is a member of a red black tree.
 -/
