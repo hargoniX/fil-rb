@@ -113,7 +113,30 @@ where
     | .red => " color=red"
     | .black => " color=grey"
 
-#eval toGraphviz (Raw.node Raw.nil 4 Color.black (Raw.node Raw.nil 8 Color.red Raw.nil))
+/--
+Transform a tree into a graphviz compatible format without explicit leafs.
+-/
+def toGraphviz2 {α : Type} [BEq α] [ToString α] [Hashable α] (t : Raw α) : String :=
+  let graph := go "" t
+  "Digraph tree {\n  node [style=filled];" ++ graph ++ "\n}"
+where
+  go {α : Type} [ToString α] (acc : String) (t : Raw α) : String :=
+    match t  with
+    | Raw.nil => acc
+    | Raw.node l x c r =>
+      let node := s!"\n  {x} [label=\"{x}\",{colorEdgeStyle c}, shape=circle];"
+      let ledge := graphEdge x "l" l
+      let redge := graphEdge x "r" r
+      let lnode := go "" l
+      let rnode := go "" r
+      acc ++ node ++ lnode ++ rnode ++ ledge ++ redge
+  colorEdgeStyle : Color → String
+    | .red => " color=red"
+    | .black => " color=grey"
+  graphEdge {α : Type} [ToString α] (parentVal : α) (label : String) : Raw α → String
+    | .nil => ""
+    | .node _ x _ _ => s!"\n  {parentVal} -> {x} [label=\"{label}\"];"
+
 #eval IO.FS.writeFile "tree.gv" <| Raw.toGraphviz (Raw.node Raw.nil 5 Color.black (Raw.node Raw.nil 7 Color.red Raw.nil))
 
 /--
