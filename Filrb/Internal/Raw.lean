@@ -57,14 +57,126 @@ def isEmpty (t : Raw α) : Bool :=
   | _ => false
 
 /--
+Fetch the color of the root of `t`.
+-/
+@[inline]
+def rootColor (t : Raw α) : Color :=
+  match t with
+  | .nil => .black
+  | .node _ _ c _ => c
+
+/--
+Paint the color of the root of `t` to given color `c`.
+-/
+@[inline]
+def paintColor (c : Color) (t : Raw α) : Raw α :=
+  match t with
+  | .nil => .nil
+  | .node l d _ r => .node l d c r
+
+-- Balanced insert into the left child, fixing red on red sequences on the way.
+@[inline]
+def baliL (d : α) : Raw α → Raw α → Raw α
+  | .node (.node t₁ data₁ .red t₂) data₂ .red t₃, right
+  | .node t₁ data₁ .red (.node t₂ data₂ .red t₃), right =>
+      .node (.node t₁ data₁ .black t₂) data₂ .red (.node t₃ d .black right)
+  | left, right => .node left d .black right
+
+-- Balanced insert into the right child, fixing red on red sequences on the way.
+@[inline]
+def baliR (d : α) : Raw α → Raw α → Raw α
+  | left, .node t₁ data₁ .red (.node t₂ data₂ .red t₃)
+  | left, .node (.node t₁ data₁ .red t₂) data₂ .red t₃ =>
+      .node (.node left d .black t₁) data₁ .red (.node t₂ data₂ .black t₃)
+  | left, right => .node left d .black right
+
+-- TODO: Immutable beans says that, due to FBIP stuff, instead of:
+-- insert (T B a y b) x = balance1 y b (insert a x) if x < y and a is red
+-- it is more efficient to do:
+-- insert (T B a y b) x = balance1 (T B E y b) (insert a x) if x < y and a is red
+-- but that doesnt seem to be done in lean4-std?
+def ins (d : α) (t : Raw α) : Raw α :=
+  match t with
+  | .nil => .node .nil d .red  .nil
+  | .node left data .black right =>
+    match compare d data with
+    | .lt => baliL data (ins d left) right
+    | .eq => t
+    | .gt => baliR data left (ins d right)
+  | .node left data .red right =>
+    match compare d data with
+    | .lt => .node (ins d left) data .red right
+    | .eq => t
+    | .gt => .node left data .red (ins d right)
+
+/--
 Insert `d` into `t`.
 -/
-def insert (t : Raw α) (d : α) : Raw α := sorry
+def insert (d : α) (t : Raw α) : Raw α :=
+  paintColor .black (ins d t)
+
+-- Balance a tree on the way up from deletion, prioritizing the left side.
+def baldL (d : α) : Raw α → Raw α → Raw α
+  | .node t₁ data .red t₂, right =>
+      .node (.node t₁ data .black t₂) d .red right
+  | left, .node t₁ data .black t₂ =>
+      baliR d left (.node t₁ data .red t₂)
+  | left, .node (.node t₁ data₁ .black t₂) data₂ .red t₃ =>
+      .node (.node left d .black t₁) data₁ .red (baliR data₂ t₂ (paintColor .red t₃))
+  | left, right => .node left d .red right
+
+-- Balance a tree on the way up from deletion, prioritizing the right side.
+def baldR (d : α) : Raw α → Raw α → Raw α
+  | left, .node t₁ data .red t₂ =>
+      .node left d .red (.node t₁ data .black t₂)
+  | .node t₁ data .black t₂, right =>
+      baliL d (.node t₁ data .red t₂) right
+  | .node  t₁ data₁ .red (.node t₂ data₂ .black t₃), right =>
+      .node (baliL data₁ (paintColor .red t₁) t₂) data₁ .red (.node t₃ data₂ .black right)
+  | left, right => .node left d .red right
+
+def del (d : α) : Raw α → Raw α
+  | .nil => .nil
+  | .node left data _ right =>
+    match compare d data with
+    | .lt =>
+      match left with
+      | .node _ _ .black _ => baldL d (del d left) right
+      | _ => .node (del d left) data .red right
+    -- Equal: this node has to be removed
+    | .eq =>
+      match right with
+      | .nil => left
+      | .node _ _ _ _ =>
+          match split_min right with
+          | none => .nil -- TODO: the book gives the impression that this codepath is dead
+          | some ⟨data',right'⟩ => match rootColor right with
+            | .black => baldR data' left right'
+            | .red => .node left data' .red right'
+    | .gt =>
+      match right with
+      | .node _ _ .black _ => baldR d left (del d right)
+      | _ => .node left data .red (del d right)
+  where
+    -- We adapt the function of the book since it doesnt handle the (dead) code path of .nil
+    -- It computes the minimum value a tree has stored inside of it and its corresponding node?
+    split_min : Raw α → Option (α × Raw α)
+    | .nil => none
+    | .node left data _ right =>
+      match left with
+      | .nil => some ⟨data, right⟩
+      | .node _ _ _ _ =>
+          match split_min left with
+          | none => none
+          | some ⟨data',left'⟩ => match rootColor left with
+            | .black => some ⟨data', baldL data left' right⟩
+            | .red => some ⟨data', .node left' data .red right⟩
 
 /--
 Erase `d` from `t`, if `d` is not in `t` leave it untouched.
 -/
-def erase (t : Raw α) (d : α) : Raw α := sorry
+def erase (d : α) (t : Raw α) : Raw α :=
+  paintColor .black (del d t)
 
 /--
 Check whether `d` is contained within `t`.
