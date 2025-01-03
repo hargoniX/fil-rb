@@ -73,6 +73,36 @@ inductive ChildInv : Raw α → Prop where
 theorem childInv_insert_of_bst (x : α) (t : Raw α) (h : ChildInv t) : ChildInv (t.insert x) := sorry
 theorem childInv_erase_of_bst (x : α) (t : Raw α) (h : ChildInv t) : ChildInv (t.erase x) := sorry
 
+/- Lemmas for balanced deletion, somehow they make use of baliL and baliR? -/
+--lemma eight_four :
+--    (invh l ∧ invh r ∧ bh l + 1 = bh r ∧ invc2 l ∧ invc r ∧ t' = baldL l a r) →
+--    (invh t' ∧ bh t' = bh r ∧ invc2 t' ∧ (color r = Black → invc t')) := by sorry
+
+--lemma eight_five :
+--    (invh l ∧ invh r ∧ bh l = bh r + 1 ∧ invc l ∧ invc2 r ∧ t' = baldR l a r) →
+--    (invh t' ∧ bh t' = bh l ∧ invc2 t' ∧ (color l = Black αrrow invc t')) := by sorry
+
+/- Those make use of baldL and baldR -/
+--lemma eight_one :
+--    (split_min t = (x, t') ∧ t ≠ Raw.nil ∧ invh t ∧ invc t) →
+--    (invh t' ∧ (color t = Red → bh t' = bh t ∧ invc t') ∧
+--    (color t = Black → bh t' = (bh t -1) ∧ invc2 t')) := by sorry
+
+--lemma eight_two :
+--  (invh t ∧ invc t ∧ t' = erase x t) →
+--  (invh t' ∧
+--    (color t = Red → bh t' = bh t ∧ invc t') ∧
+--    (color t = Black → bh t' = bh t -1 ∧ invc2 t')) := by sorry
+
+-- what does it mean that something is a rbt? should be invariants no?
+--lemma eight_three : rbt t → rbt (erase x t) := by sorry
+
+def ChildInv2 (t : Raw α) : Prop :=
+  match t with
+  | nil => ChildInv t
+  | node _ _ .black _ => ChildInv t
+  | node l x .red r => ChildInv (.node l x .black r)
+
 def blackHeightLeft (t : Raw α) : Nat :=
   match t with
   | .nil => 0
