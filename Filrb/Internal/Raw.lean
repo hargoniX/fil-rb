@@ -56,14 +56,131 @@ inductive Raw (α : Type u) where
 namespace Raw
 
 /--
+Fetch the color of the root of `t`.
+-/
+def rootColor (t : Raw α) : Color :=
+  match t with
+  | .nil => .black
+  | .node _ _ c _ => c
+
+/--
+Paint the color of the root of `t` to given color `c`.
+-/
+def paintColor (c : Color) (t : Raw α) : Raw α :=
+  match t with
+  | .nil => .nil
+  | .node l d _ r => .node l d c r
+
+/-
+  Insertion: Helper Functions
+-/
+
+-- Balanced insert into the left child, fixing red on red sequences on the way.
+def baliL (d : α) : Raw α → Raw α → Raw α
+  | .node (.node t₁ data₁ .red t₂) data₂ .red t₃, right =>
+      .node (.node t₁ data₁ .black t₂) data₂ .red (.node t₃ d .black right)
+  | .node t₁ data₁ .red (.node t₂ data₂ .red t₃), right =>
+      .node (.node t₁ data₁ .black t₂) data₂ .red (.node t₃ d .black right)
+  | left, right => .node left d .black right
+
+-- Balanced insert into the right child, fixing red on red sequences on the way.
+def baliR (d : α) : Raw α → Raw α → Raw α
+  | left, .node t₁ data₁ .red (.node t₂ data₂ .red t₃)=>
+      .node (.node left d .black t₁) data₁ .red (.node t₂ data₂ .black t₃)
+  | left, .node (.node t₁ data₁ .red t₂) data₂ .red t₃=>
+      .node (.node left d .black t₁) data₁ .red (.node t₂ data₂ .black t₃)
+  | left, right => .node left d .black right
+
+def ins (t : Raw α) (d : α) : Raw α :=
+  match t with
+  | .nil => .node .nil d .red  .nil
+  | .node left data .black right =>
+    match compare d data with
+    | .lt => baliL data (ins left d) right
+    | .eq => t
+    | .gt => baliR data left (ins right d)
+  | .node left data .red right =>
+    match compare d data with
+    | .lt => .node (ins left d) data .red right
+    | .eq => t
+    | .gt => .node left data .red (ins right d)
+
+/--
 Insert `d` into `t`.
 -/
-def insert (t : Raw α) (d : α) : Raw α := sorry
+def insert (t : Raw α) (d : α) : Raw α :=
+  paintColor .black (ins t d)
+
+/--
+  Helper Functions for deletion
+-/
+-- Balanced deletion of an element from the left child, fixing red on red sequences on the way.
+def baldL (d : α) : Raw α → Raw α → Raw α
+  | .node t₁ data .red t₂, right =>
+      .node (.node t₁ data .black t₂) d .red right
+  | left, .node t₁ data .black t₂ =>
+      baliR d left (.node t₁ data .red t₂)
+  | left, .node (.node t₁ data₁ .black t₂) data₂ .red t₃ =>
+      .node (.node left d .black t₁) data₁ .red (baliR data₂ t₂ (paintColor .red t₃))
+  | left, right => .node left d .red right
+
+-- Balanced deletion of an element from the right child, fixing red on red sequences on the way.
+def baldR (d : α) : Raw α → Raw α → Raw α
+  | left, .node t₁ data .red t₂ =>
+      .node left d .red (.node t₁ data .black t₂)
+  | .node t₁ data .black t₂, right =>
+      baliL d (.node t₁ data .red t₂) right
+  | .node  t₁ data₁ .red (.node t₂ data₂ .black t₃), right =>
+      .node (baliL data₁ (paintColor .red t₁) t₂) data₁ .red (.node t₃ data₂ .black right)
+  | left, right => .node left d .red right
+
+
+def del (t : Raw α) (d : α) : Raw α :=
+  match t with
+  | .nil => .nil
+  | .node left data _ right =>
+    match compare d data with
+    | .lt =>
+      let left' := del left d
+      match left with
+      | .nil => .node left' data .red right
+      | .node _ _ .black _ => baldL d left' right
+      | .node _ _ _ _ => .node left' data .red right
+    | .eq =>
+      match right with
+      | .nil => left
+      | .node _ _ _ _ =>
+          match split_min right with
+          | none => .nil -- TODO: the book gives the impression that this codepath is dead
+          | some ⟨data',right'⟩ => match rootColor right with
+            | .black => baldR data' left right'
+            | .red => .node left data' .red right'
+    | .gt =>
+      let right' := del right d
+      match right with
+      | .nil => .node left data .red right'
+      | .node _ _ .black _ => baldL d left right'
+      | .node _ _ _ _ => .node left data .red right'
+  where
+    -- We adapt the function of the book since it doesnt handle the (dead) code path of .nil
+    -- It computes the minimum value a tree has stored inside of it and its corresponding node?
+    split_min : Raw α → Option (α × Raw α)
+    | .nil => none
+    | .node left data _ right =>
+      match left with
+      | .nil => some ⟨data, right⟩
+      | .node _ _ _ _ =>
+          match split_min left with
+          | none => none
+          | some ⟨data',left'⟩ => match rootColor left with
+            | .black => some ⟨data', baldL data left' right⟩
+            | .red => some ⟨data', .node left' data .red right⟩
 
 /--
 Erase `d` from `t`, if `d` is not in `t` leave it untouched.
 -/
-def erase (t : Raw α) (d : α) : Raw α := sorry
+def erase (t : Raw α) (d : α) : Raw α :=
+  paintColor .black (del t d)
 
 /--
 Check whether `d` is contained within `t`.
@@ -134,6 +251,15 @@ where
   graphEdge {α : Type} [ToString α] (parentVal : α) (label : String) : Raw α → String
     | .nil => ""
     | .node _ x _ _ => s!"\n  {parentVal} -> {x} [label=\"{label}\"];"
+
+def exTree1 : Raw Int := insert (insert (insert .nil 0) 2) 4
+def exTree2 : Raw Int := insert exTree1 1
+def exTree3 : Raw Int := erase exTree2 1
+def exTree4 : Raw Int := insert (insert (insert (insert (insert .nil 100) 0) 500) 110) 105
+#eval IO.FS.writeFile "examples/tree-preinsert.gv" exTree1.toGraphviz
+#eval IO.FS.writeFile "examples/tree-postinsert.gv" exTree2.toGraphviz
+#eval IO.FS.writeFile "examples/tree-postdeletion.gv" exTree3.toGraphviz
+#eval IO.FS.writeFile "examples/tree-4.gv" exTree4.toGraphviz
 
 /--
 `x` is a member of a red black tree.
