@@ -1,6 +1,7 @@
 1. Define the basic raw RBSet and functions on it, refer to:
   - https://arxiv.org/pdf/1908.05647
   - https://github.com/leanprover/lean4/blob/master/src/Lean/Data/RBMap.lean
+  - https://www.cs.tufts.edu/comp/150FP/archive/chris-okasaki/redblack99.pdf
   - https://www.cs.cmu.edu/~rwh/students/okasaki.pdf
   Functions:
   - `RBSet.Raw`
@@ -39,4 +40,4 @@ For fun stuff:
   - If feeling fancy Exercise: 4 stars, advanced (redblack_bound)
 - extend to RBMap
 - extend to dependent RBMap
-
+- Widget to display the (operation on the) tree within the infoview?
