@@ -135,6 +135,23 @@ def baldR (d : α) : Raw α → Raw α → Raw α
       .node (baliL data₁ (paintColor .red t₁) t₂) data₁ .red (.node t₃ data₂ .black right)
   | left, right => .node left d .red right
 
+-- Appends one tree to another while painting the correct color
+def appendTrees : Raw α → Raw α → Raw α
+  | .nil, t => t
+  | t, .nil => t
+  | .node left₁ data₁ .red right₁, .node left₂ data₂ .red right₂ =>
+    match appendTrees right₁ left₂ with
+    | .node left₃ data₃ .red right₃ =>
+        .node (.node left₁ data₁ .red left₃) data₃ .red (.node right₃ data₂ .red right₂)
+    | t                   => .node left₁ data₁ .red (.node t data₂ .red right₂)
+  | .node left₁ data₁ .black right₁, .node left₂ data₂ .black right₂ =>
+    match appendTrees right₁ left₂ with
+    | .node left₃ data₃ .red right₃ =>
+        .node (node left₁ data₁ .black left₃) data₃ .red (node right₃ data₂ .black right₂)
+    | t                   => baldL data₁ left₁ (node t data₂ .black right₂)
+  | t, .node left data .red right => node (appendTrees t left) data .red right
+  | .node left data .red right, t => .node left data .red (appendTrees right t)
+
 def del (d : α) : Raw α → Raw α
   | .nil => .nil
   | .node left data _ right =>
@@ -143,34 +160,11 @@ def del (d : α) : Raw α → Raw α
       match left with
       | .node _ _ .black _ => baldL d (del d left) right
       | _ => .node (del d left) data .red right
-    -- Equal: this node has to be removed
-    | .eq =>
-      match right with
-      | .nil => left
-      | .node _ _ _ _ =>
-          match split_min right with
-          | none => .nil -- TODO: the book gives the impression that this codepath is dead
-          | some ⟨data',right'⟩ => match rootColor right with
-            | .black => baldR data' left right'
-            | .red => .node left data' .red right'
+    | .eq => appendTrees left right
     | .gt =>
       match right with
       | .node _ _ .black _ => baldR d left (del d right)
       | _ => .node left data .red (del d right)
-  where
-    -- We adapt the function of the book since it doesnt handle the (dead) code path of .nil
-    -- It computes the minimum value a tree has stored inside of it and its corresponding node?
-    split_min : Raw α → Option (α × Raw α)
-    | .nil => none
-    | .node left data _ right =>
-      match left with
-      | .nil => some ⟨data, right⟩
-      | .node _ _ _ _ =>
-          match split_min left with
-          | none => none
-          | some ⟨data',left'⟩ => match rootColor left with
-            | .black => some ⟨data', baldL data left' right⟩
-            | .red => some ⟨data', .node left' data .red right⟩
 
 /--
 Erase `d` from `t`, if `d` is not in `t` leave it untouched.
