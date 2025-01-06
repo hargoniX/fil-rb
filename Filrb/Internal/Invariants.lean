@@ -8,47 +8,9 @@ red black trees preserve these invariants.
 namespace Filrb
 namespace Internal
 
-variable [Preorder α] [Ord α] [LawfulOrd α]
-
-namespace LawfulOrd
-
-@[simp]
-theorem compare_eq_lt {x y : α} : compare x y = .lt ↔ x < y := by
-  have := LawfulOrd.compares x y
-  match h : compare x y with
-  | .lt => simp_all
-  | .eq => simp_all
-  | .gt =>
-    simp only [h, Ordering.compares_gt, gt_iff_lt, reduceCtorEq, false_iff, not_lt, ge_iff_le] at *
-    apply le_of_lt
-    assumption
-
-@[simp]
-theorem compare_eq_eq {x y : α} : compare x y = .eq ↔ x = y := by
-  have := LawfulOrd.compares x y
-  match h : compare x y with
-  | .lt =>
-    simp only [h, Ordering.compares_lt, reduceCtorEq, false_iff, ne_eq] at *
-    exact ne_of_lt this
-  | .eq => simp_all
-  | .gt =>
-    simp only [h, Ordering.compares_gt, gt_iff_lt, reduceCtorEq, false_iff, ne_eq] at *
-    exact ne_of_gt this
-
-@[simp]
-theorem compare_eq_gt {x y : α} : compare x y = .gt ↔ y < x := by
-  have := LawfulOrd.compares x y
-  match h : compare x y with
-  | .lt =>
-    simp only [h, Ordering.compares_lt, reduceCtorEq, false_iff, not_lt, ge_iff_le] at *
-    apply le_of_lt
-    assumption
-  | .eq => simp_all
-  | .gt => simp_all
-
-end LawfulOrd
-
 namespace Raw
+
+variable [Preorder α] [Ord α] [LawfulOrd α]
 
 /--
 A tree is a binary search tree.
