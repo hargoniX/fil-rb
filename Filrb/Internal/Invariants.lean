@@ -1,4 +1,5 @@
 import Filrb.Internal.Raw
+import Mathlib.Data.Nat.Log
 
 /-!
 This module defines the red black tree invariants and proves that the mutating operations on
@@ -67,6 +68,9 @@ theorem heightInv_nil : HeightInv (.nil : Raw α) := HeightInv.nil
 
 theorem heightInv_insert_of_bst (x : α) (t : Raw α) (h : HeightInv t) : HeightInv (t.insert x) := sorry
 theorem heightInv_erase_of_bst (x : α) (t : Raw α) (h : HeightInv t) : HeightInv (t.erase x) := sorry
+
+theorem height_le_log_size {t : Raw α} (h1 : ChildInv t) (h2 : HeightInv t) :
+    t.height ≤ 2 * Nat.log 2 t.size + 2 := sorry
 
 end Raw
 end Internal

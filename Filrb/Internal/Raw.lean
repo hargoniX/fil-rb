@@ -185,17 +185,25 @@ def contains (t : Raw α) (d : α) : Bool :=
     | .gt => right.contains d
 
 def inorder : Raw α → List α
-| Raw.nil => []
-| Raw.node l x _ r => inorder l ++ [x] ++ inorder r
+  | Raw.nil => []
+  | Raw.node l x _ r => inorder l ++ [x] ++ inorder r
 
-def inorder2 : Raw α → List α → List α
-| Raw.nil, l => l
-| Raw.node l x _ r, xs => inorder2 l <| x :: inorder2 r xs
+private def inorder2 : Raw α → List α → List α
+  | Raw.nil, l => l
+  | Raw.node l x _ r, xs => inorder2 l <| x :: inorder2 r xs
 
 example : inorder2 t xs = inorder t ++ xs := by
   induction t generalizing xs with
   | nil => simp [inorder2, inorder]
   | node _ _ _ _ ihl ihr => simp [inorder2, inorder, ihl, ihr]
+
+/--
+Compute the height of `t`.
+-/
+def height (t : Raw α) : Nat :=
+  match t with
+  | .nil => 0
+  | .node left _ _ right => max (height left) (height right) + 1
 
 /--
 Transform a tree into a graphviz compatible format.

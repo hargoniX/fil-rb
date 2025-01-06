@@ -93,7 +93,7 @@ namespace Model
 def inorder (set : Set α) : List α := set.raw.inorder
 
 theorem inorder_sorted {t : Set α} : Sorted (inorder t) :=
-  bst_iff_sorted_inorder.mp t.bst
+  bst_iff_sorted_inorder.mp t.hbst
 
 @[simp]
 theorem inorder_empty : inorder (.empty : Set α) = [] :=

@@ -8,9 +8,10 @@
   - `RBSet.Raw`
   - `Membership`
   - `empty`
+  - `isEmpty`
   - `insert`
-  - `delete`
-  - `get?`
+  - `erase`
+  - `isEmpty`
 2. Define the invariants on it
   - `BST`
   - `RBInv`
@@ -19,26 +20,25 @@
   - `empty` `RBInv`
   - `insert` `BST`
   - `insert` `RBInv`
-  - `delete` `BST`
-  - `delete` `RBInv`
+  - `erase` `BST`
+  - `erase` `RBInv`
 4. Pack up into a surface level `RBSet`
 5. Build set theory for `RBSet.Raw`, lift to surface level `RBSet`, refer to https://functional-algorithms-verified.org/functional_data_structures_algorithms.pdf
 6. Build `simp` theory based on set theory, refer to https://github.com/leanprover/lean4/blob/master/src/Std/Data/HashSet/Lemmas.lean
 
 For fun stuff:
 - Additional helper functions:
-  - `isEmpty`
-  - `get!`
-  - `get`
-  - `GetElem`
-  - `min`
-  - `max`
-- use Ordering.cmp instead of LinearOrder
-- Functional Algorithms (https://functional-algorithms-verified.org/functional_data_structures_algorithms.pdf):
-  - Exercise 8.3: define and verify ofList function
-- Software Foundations (https://softwarefoundations.cis.upenn.edu/vfa-current/Redblack.html)
-  - Exercise: 1 star, standard (RB_blacken_parent)
-  - If feeling fancy Exercise: 4 stars, advanced (redblack_bound)
+  - `min?`
+  - `max?`
+  - `all`
+  - `any`
+- Exercises from:
+  - Functional Algorithms (https://functional-algorithms-verified.org/functional_data_structures_algorithms.pdf):
+  - Software Foundations (https://softwarefoundations.cis.upenn.edu/vfa-current/Redblack.html)
+    - a lot of the exercises here we just implicitly do already
+  - Beyond what we already intend on doing we collect:
+    - showing that the invariants imply logarithmic height
+- performance evaluation
 - extend to RBMap
-- extend to dependent RBMap
 - Widget to display the (operation on the) tree within the infoview?
+- extend to dependent RBMap
