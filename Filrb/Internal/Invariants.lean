@@ -20,6 +20,9 @@ inductive BST : Raw α → Prop where
   | node (hleft1 : ∀ x ∈ left, x < data) (hleft2 : BST left)
          (hright1 : ∀ x ∈ right, data < x) (hright2 : BST right) : BST (.node left data color right)
 
+omit [Ord α] [LawfulOrd α] in
+theorem bst_nil : BST (.nil : Raw α) := BST.nil
+
 theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := sorry
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := sorry
 
@@ -39,6 +42,9 @@ inductive ChildInv : Raw α → Prop where
   | black (hleft : ChildInv left) (hright : ChildInv right) : ChildInv (.node left data .black right)
   | red (hleft1 : ChildInv left) (hleft2 : left.rootColor = .black) (hright1 : ChildInv right)
         (hright2 : right.rootColor = .black) : ChildInv (.node left data .red right)
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem childInv_nil : ChildInv (.nil : Raw α) := ChildInv.nil
 
 theorem childInv_insert_of_bst (x : α) (t : Raw α) (h : ChildInv t) : ChildInv (t.insert x) := sorry
 theorem childInv_erase_of_bst (x : α) (t : Raw α) (h : ChildInv t) : ChildInv (t.erase x) := sorry
@@ -63,6 +69,9 @@ inductive HeightInv : Raw α → Prop where
   | nil : HeightInv .nil
   | node (hleft : HeightInv left) (hright : HeightInv right)
          (h : left.blackHeightLeft = right.blackHeightLeft) : HeightInv (.node left data color right)
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem heightInv_nil : HeightInv (.nil : Raw α) := HeightInv.nil
 
 theorem heightInv_insert_of_bst (x : α) (t : Raw α) (h : HeightInv t) : HeightInv (t.insert x) := sorry
 theorem heightInv_erase_of_bst (x : α) (t : Raw α) (h : HeightInv t) : HeightInv (t.erase x) := sorry

@@ -47,6 +47,11 @@ inductive Raw (α : Type u) where
 
 namespace Raw
 
+def isEmpty (t : Raw α) : Bool :=
+  match t with
+  | .nil => true
+  | _ => false
+
 /--
 Insert `d` into `t`.
 -/
@@ -79,6 +84,11 @@ inductive Mem (x : α) : Raw α → Prop where
 
 instance : Membership α (Raw α) where
   mem t x := Mem x t
+
+def size (t : Raw α) : Nat :=
+  match t with
+  | .nil => 0
+  | .node l _ _ r => size l + size r + 1
 
 end Raw
 

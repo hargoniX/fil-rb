@@ -90,6 +90,13 @@ theorem contains_eq_true_of_mem {x : α} {t : Raw α} (h1 : x ∈ t) (h2 : BST t
       | right hmemright => assumption
     · assumption
 
+theorem contains_eq_true_iff_mem_of_bst {x : α} {t : Raw α} (h : BST t) :
+    t.contains x = true ↔ x ∈ t := by
+  constructor
+  · apply mem_of_contains_eq_true
+  · intro h
+    apply contains_eq_true_of_mem <;> assumption
+
 end Raw
 end Internal
 end Filrb
