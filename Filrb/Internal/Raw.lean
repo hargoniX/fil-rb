@@ -47,6 +47,10 @@ inductive Raw (α : Type u) where
 
 namespace Raw
 
+/--
+Whether `t` is an empty set.
+-/
+@[inline]
 def isEmpty (t : Raw α) : Bool :=
   match t with
   | .nil => true
@@ -119,6 +123,9 @@ inductive Mem (x : α) : Raw α → Prop where
 instance : Membership α (Raw α) where
   mem t x := Mem x t
 
+/--
+Returns the amount of elements in `t`.
+-/
 def size (t : Raw α) : Nat :=
   match t with
   | .nil => 0

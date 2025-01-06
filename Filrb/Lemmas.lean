@@ -1,5 +1,12 @@
 import Filrb.Basic
 
+/-!
+This module builds the basic theory for `Filrb.Set` in the style that the Lean FRO standard library
+team verifies datastructures: We consider the interaction of each operation vs each other operation
+and if necessary define lemmas that describe these interactions. While this is quadratic in the
+size of the API surface it allows for a very nice coverage of most scenarios that might arise.
+-/
+
 namespace Filrb
 
 namespace Set

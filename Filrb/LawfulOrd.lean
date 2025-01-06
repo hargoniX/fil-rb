@@ -1,9 +1,20 @@
 import Mathlib.Order.Compare
 
+/-!
+This module builds the basic theory around a lawful version of the `Ord` typeclass. We are
+interested in the `Ord` typeclass as it allows us to check for the `<`, `=`, `>` trichotomy in
+one match.
+-/
+
 namespace Filrb
 
-
+/--
+A lawful version of the `Ord` typeclass.
+-/
 class LawfulOrd (α : Type u) [LT α] [Ord α] where
+  /--
+  An `Ord` instance is lawful if it corresponds precisely to `<`, `=` and `>` on its type.
+  -/
   compares : ∀ (a b : α), (compare a b).Compares a b
 
 instance [Preorder α] [Ord α] [LawfulOrd α] : LinearOrder α :=
