@@ -1,6 +1,4 @@
-import Mathlib.Order.Defs.LinearOrder
-import Mathlib.Data.Ordering.Basic
-import Mathlib.Order.Compare
+import Filrb.LawfulOrd
 
 
 /-!
@@ -24,12 +22,6 @@ FBIP usage, consider the following alternative definitions:
 
 namespace Filrb
 namespace Internal
-
-class LawfulOrd (α : Type u) [LT α] [Ord α] where
-  compares : ∀ (a b : α), (compare a b).Compares a b
-
-instance [Preorder α] [Ord α] [LawfulOrd α] : LinearOrder α :=
-  linearOrderOfCompares compare LawfulOrd.compares
 
 variable [Preorder α] [Ord α] [LawfulOrd α]
 
