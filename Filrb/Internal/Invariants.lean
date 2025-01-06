@@ -27,14 +27,6 @@ theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) :
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := sorry
 
 /--
-Fetch the color of the root of `t`.
--/
-def rootColor (t : Raw α) : Color :=
-  match t with
-  | .nil => .black
-  | .node _ _ c _ => c
-
-/--
 The child invariant for red black trees: Red nodes must have black children.
 -/
 inductive ChildInv : Raw α → Prop where

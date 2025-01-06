@@ -3,6 +3,7 @@
   - https://github.com/leanprover/lean4/blob/master/src/Lean/Data/RBMap.lean
   - https://www.cs.tufts.edu/comp/150FP/archive/chris-okasaki/redblack99.pdf
   - https://www.cs.cmu.edu/~rwh/students/okasaki.pdf
+  - https://www.khoury.northeastern.edu/~camoy/pub/red-black-tree.pdf
   Functions:
   - `RBSet.Raw`
   - `Membership`
