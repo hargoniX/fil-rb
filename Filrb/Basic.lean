@@ -40,8 +40,11 @@ def contains (set : Set α) (x : α) : Bool := set.raw.contains x
 instance : Membership α (Set α) where
   mem set x := x ∈ set.raw
 
+theorem contains_eq_true_iff_mem {set : Set α} {x : α} : set.contains x = true ↔ x ∈ set :=
+  Internal.Raw.contains_eq_true_iff_mem_of_bst set.bst
+
 instance {x : α} {set : Set α} : Decidable (x ∈ set) :=
-  decidable_of_iff (set.contains x) (Internal.Raw.contains_eq_true_iff_mem_of_bst set.bst)
+  decidable_of_iff (set.contains x) contains_eq_true_iff_mem
 
 def erase (set : Set α) (x : α) : Set α :=
   let ⟨raw, bst, color, height⟩ := set

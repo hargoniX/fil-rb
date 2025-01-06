@@ -7,53 +7,70 @@ namespace Set
 variable [Preorder α] [Ord α] [LawfulOrd α]
 variable  {set : Set α}
 
+theorem emptyc_eq_empty : (∅ : Set α) = (empty : Set α) := by
+  rfl
+
+theorem contains_eq_decide_mem {x : α} : set.contains x = decide (x ∈ set) := by
+  simp [← contains_eq_true_iff_mem]
+
+theorem contains_eq_false_iff_not_mem {x : α} : set.contains x = false ↔ ¬(x ∈ set) := by
+  simp [← contains_eq_true_iff_mem]
+
 @[simp]
 theorem isEmpty_empty : isEmpty (empty : Set α) = true := sorry
 
 @[simp]
-theorem isEmpty_emptyc : isEmpty (∅ : Set α) = true := sorry
+theorem isEmpty_emptyc : isEmpty (∅ : Set α) = true := by
+  simp [emptyc_eq_empty]
 
 @[simp]
 theorem isEmpty_insert {x : α} : isEmpty (set.insert x) = false := sorry
 
 @[simp]
-theorem contains_empty {x : α} : contains (empty : Set α) x = false := sorry
-
-@[simp]
 theorem not_mem_empty {x : α} : ¬(x ∈ (empty : Set α)) := sorry
 
 @[simp]
-theorem contains_emptyc {x : α} : contains (∅ : Set α) x = false := sorry
+theorem contains_empty {x : α} : contains (empty : Set α) x = false := by
+  simp [contains_eq_false_iff_not_mem]
 
 @[simp]
-theorem not_mem_emptyc {x : α} : ¬(x ∈ (∅ : Set α)) := sorry
+theorem not_mem_emptyc {x : α} : ¬(x ∈ (∅ : Set α)) := by
+  simp [emptyc_eq_empty]
 
-theorem contains_of_isEmpty {a : α} : set.isEmpty → set.contains a = false := sorry
+@[simp]
+theorem contains_emptyc {x : α} : contains (∅ : Set α) x = false := by
+  simp [emptyc_eq_empty]
 
 theorem not_mem_of_isEmpty {a : α} : set.isEmpty → ¬a ∈ set := sorry
 
+theorem contains_of_isEmpty {a : α} : set.isEmpty → set.contains a = false := by
+  rw [contains_eq_false_iff_not_mem]
+  apply not_mem_of_isEmpty
+
+theorem isEmpty_eq_false_iff_exists_mem : set.isEmpty = false ↔ ∃ a, a ∈ set := sorry
+
 theorem isEmpty_eq_false_iff_exists_contains_eq_true :
-    set.isEmpty = false ↔ ∃ a, set.contains a = true := sorry
+    set.isEmpty = false ↔ ∃ a, set.contains a = true := by
+  simp [contains_eq_true_iff_mem, isEmpty_eq_false_iff_exists_mem]
 
-theorem isEmpty_eq_false_iff_exists_mem :
-    set.isEmpty = false ↔ ∃ a, a ∈ set := sorry
+theorem isEmpty_iff_forall_not_mem : set.isEmpty = true ↔ ∀ a, ¬a ∈ set := sorry
 
-theorem isEmpty_iff_forall_contains :
-    set.isEmpty = true ↔ ∀ a, set.contains a = false := sorry
-
-theorem isEmpty_iff_forall_not_mem :
-    set.isEmpty = true ↔ ∀ a, ¬a ∈ set := sorry
-
-@[simp]
-theorem contains_insert {k a : α} : (set.insert k).contains a = (k = a ∨ set.contains a) := sorry
+theorem isEmpty_iff_forall_contains : set.isEmpty = true ↔ ∀ a, set.contains a = false := by
+  simp [contains_eq_false_iff_not_mem, isEmpty_iff_forall_not_mem]
 
 @[simp]
 theorem mem_insert {k a : α} : a ∈ set.insert k ↔ k = a ∨ a ∈ set := sorry
 
-theorem contains_of_contains_insert {k a : α} :
-    (set.insert k).contains a → k ≠ a → set.contains a := sorry
+@[simp]
+theorem contains_insert {k a : α} : (set.insert k).contains a = (k = a ∨ set.contains a) := by
+  simp [contains_eq_true_iff_mem]
 
 theorem mem_of_mem_insert {k a : α} : a ∈ set.insert k → k ≠ a → a ∈ set := sorry
+
+theorem contains_of_contains_insert {k a : α} :
+    (set.insert k).contains a → k ≠ a → set.contains a := by
+  rw [contains_eq_true_iff_mem, contains_eq_true_iff_mem]
+  apply mem_of_mem_insert
 
 theorem contains_insert_self {k : α} : (set.insert k).contains k := by
   simp
@@ -65,7 +82,8 @@ theorem mem_insert_self {k : α} : k ∈ set.insert k := by
 theorem size_empty : (empty : Set α).size = 0 := sorry
 
 @[simp]
-theorem size_emptyc : (∅ : Set α).size = 0 := sorry
+theorem size_emptyc : (∅ : Set α).size = 0 := by
+  simp [emptyc_eq_empty]
 
 theorem isEmpty_eq_size_eq_zero : set.isEmpty = (set.size == 0) := sorry
 
@@ -81,21 +99,25 @@ theorem size_insert_le {k : α} : (set.insert k).size ≤ set.size + 1 := sorry
 theorem erase_empty {a : α} : (empty : Set α).erase a = empty := sorry
 
 @[simp]
-theorem erase_emptyc {a : α} : (∅ : Set α).erase a = ∅ := sorry
+theorem erase_emptyc {a : α} : (∅ : Set α).erase a = ∅ := by
+  simp [emptyc_eq_empty]
 
 @[simp]
 theorem isEmpty_erase {k : α} :
     (set.erase k).isEmpty = (set.isEmpty || (set.size == 1 && set.contains k)) := sorry
 
 @[simp]
-theorem contains_erase {k a : α} : (set.erase k).contains a = (k ≠ a && set.contains a) := sorry
+theorem mem_erase {k a : α} : a ∈ set.erase k ↔ k ≠ a ∧ a ∈ set := sorry
 
 @[simp]
-theorem mem_erase {k a : α} : a ∈ set.erase k ↔ (k ≠ a) ∧ a ∈ set := sorry
-
-theorem contains_of_contains_erase {k a : α} : (set.erase k).contains a → set.contains a := sorry
+theorem contains_erase {k a : α} : (set.erase k).contains a = (k ≠ a && set.contains a) := by
+  simp [contains_eq_decide_mem]
 
 theorem mem_of_mem_erase {k a : α} : a ∈ set.erase k → a ∈ set := sorry
+
+theorem contains_of_contains_erase {k a : α} : (set.erase k).contains a → set.contains a := by
+  rw [contains_eq_true_iff_mem, contains_eq_true_iff_mem]
+  apply mem_of_mem_erase
 
 theorem size_erase {k : α} : (set.erase k).size = if k ∈ set then set.size - 1 else set.size :=
   sorry
