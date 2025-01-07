@@ -23,7 +23,7 @@ FBIP usage, consider the following alternative definitions:
 namespace Filrb
 namespace Internal
 
-variable [Preorder α] [Ord α] [LawfulOrd α]
+variable [Preorder α] [Ord α]
 
 /--
 Colors of red black tree nodes.

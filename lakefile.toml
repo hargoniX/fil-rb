@@ -2,6 +2,7 @@ name = "filrb"
 version = "0.1.0"
 keywords = ["math"]
 defaultTargets = ["Filrb"]
+testRunner = "Test"
 
 [[require]]
 name = "mathlib"
@@ -9,3 +10,6 @@ scope = "leanprover-community"
 
 [[lean_lib]]
 name = "Filrb"
+
+[[lean_lib]]
+name = "Test"
