@@ -158,12 +158,12 @@ def del (d : α) : Raw α → Raw α
     match compare d data with
     | .lt =>
       match left with
-      | .node _ _ .black _ => baldL d (del d left) right
+      | .node _ _ .black _ => baldL data (del d left) right
       | _ => .node (del d left) data .red right
     | .eq => appendTrees left right
     | .gt =>
       match right with
-      | .node _ _ .black _ => baldR d left (del d right)
+      | .node _ _ .black _ => baldR data left (del d right)
       | _ => .node left data .red (del d right)
 
 /--
