@@ -68,12 +68,32 @@ end Model
 
 end Raw
 
+-- TODO: this is probably useful in Mathlib
+omit [Ord α] [LawfulOrd α] in
 theorem Sorted_append_cons_iff {left right : List α} {data : α} :
     Sorted (left ++ data :: right)
       ↔
-    (∀ x ∈ right, data < x) ∧ (∀ x ∈ left, x < data) ∧ Sorted left ∧ Sorted right
-    := sorry
+    (∀ x ∈ right, data < x) ∧ (∀ x ∈ left, x < data) ∧ Sorted left ∧ Sorted right := by
+  induction left with
+  | nil => simp
+  | cons l ls ih =>
+    simp_all
+    constructor
+    · aesop
+    · intro h
+      rcases h with ⟨h1, ⟨h2, h3⟩, ⟨h4, h5⟩, h6⟩
+      constructor
+      · intro b hb
+        rcases hb with hb | hb | hb
+        · apply h4
+          assumption
+        · rwa [hb]
+        · apply lt_trans
+          · exact h2
+          · exact h1 b hb
+      · simp_all
 
+omit [Ord α] [LawfulOrd α] in
 theorem bst_iff_sorted_inorder {t : Raw α} : t.BST ↔ Sorted t.inorder := by
   induction t with
   | nil => simp
@@ -103,7 +123,10 @@ namespace Raw
 namespace Model
 
 theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
-    (t.insert x).inorder = sortedInsert t.inorder x := sorry
+    (t.insert x).inorder = sortedInsert t.inorder x := by
+  induction t with
+  | nil => sorry
+  | node => sorry
 
 theorem inorder_erase_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
     (t.erase x).inorder = sortedErase t.inorder x := sorry
