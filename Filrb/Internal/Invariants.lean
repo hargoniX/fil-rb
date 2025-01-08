@@ -22,6 +22,7 @@ inductive BST : Raw α → Prop where
          (hright1 : ∀ x ∈ right, data < x) (hright2 : BST right) : BST (.node left data color right)
 
 omit [Ord α] [LawfulOrd α] in
+@[simp]
 theorem bst_nil : BST (.nil : Raw α) := BST.nil
 
 theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := sorry
@@ -37,6 +38,7 @@ inductive ChildInv : Raw α → Prop where
         (hright2 : right.rootColor = .black) : ChildInv (.node left data .red right)
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
 theorem childInv_nil : ChildInv (.nil : Raw α) := ChildInv.nil
 
 theorem childInv_insert_of_bst (x : α) (t : Raw α) (h : ChildInv t) : ChildInv (t.insert x) := sorry
@@ -64,6 +66,7 @@ inductive HeightInv : Raw α → Prop where
          (h : left.blackHeightLeft = right.blackHeightLeft) : HeightInv (.node left data color right)
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
 theorem heightInv_nil : HeightInv (.nil : Raw α) := HeightInv.nil
 
 theorem heightInv_insert_of_bst (x : α) (t : Raw α) (h : HeightInv t) : HeightInv (t.insert x) := sorry

@@ -44,10 +44,7 @@ def sortedErase (xs : List α) (a : α) : List α :=
     else
       x :: sortedErase xs a
 
-theorem bst_iff_sorted_inorder {t : Raw α} : t.BST ↔ Sorted t.inorder := sorry
-
 namespace Raw
-namespace Model
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[simp]
@@ -59,13 +56,57 @@ omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem inorder_node : (.node l x c r : Raw α).inorder = inorder l ++ [x] ++ inorder r := by
   rfl
 
+namespace Model
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem mem_iff_mem {t : Raw α} (x : α) : x ∈ t ↔ x ∈ t.inorder := by
+  induction t generalizing x with
+  | nil => simp
+  | node left data color right lih rih => simp_all
+
+end Model
+
+end Raw
+
+theorem Sorted_append_cons_iff {left right : List α} {data : α} :
+    Sorted (left ++ data :: right)
+      ↔
+    (∀ x ∈ right, data < x) ∧ (∀ x ∈ left, x < data) ∧ Sorted left ∧ Sorted right
+    := sorry
+
+theorem bst_iff_sorted_inorder {t : Raw α} : t.BST ↔ Sorted t.inorder := by
+  induction t with
+  | nil => simp
+  | node left data color right lih rih =>
+    constructor
+    · intro h
+      cases h with
+      | node hleft1 hleft2 hright1 hright2 =>
+        simp only [Raw.inorder_node, List.append_assoc, List.singleton_append,
+          Sorted_append_cons_iff]
+        refine ⟨?_, ?_, ?_, ?_⟩
+        · simpa [Raw.Model.mem_iff_mem] using hright1
+        · simpa [Raw.Model.mem_iff_mem] using hleft1
+        · rwa [← lih]
+        · rwa [← rih]
+    · intro h
+      simp only [Raw.inorder_node, List.append_assoc, List.singleton_append,
+        Sorted_append_cons_iff] at h
+      rcases h with ⟨h1, h2, h3, h4⟩
+      apply Raw.BST.node
+      · simpa [Raw.Model.mem_iff_mem]
+      · rwa [lih]
+      · simpa [Raw.Model.mem_iff_mem]
+      · rwa [rih]
+
+namespace Raw
+namespace Model
+
 theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
     (t.insert x).inorder = sortedInsert t.inorder x := sorry
 
 theorem inorder_erase_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
     (t.erase x).inorder = sortedErase t.inorder x := sorry
-
-theorem mem_iff_mem {t : Raw α} (x : α) (h : Sorted t.inorder) : x ∈ t ↔ x ∈ t.inorder := sorry
 
 theorem contains_iff_contains {t : Raw α} (x : α) (h : Sorted t.inorder) :
     t.contains x = (t.inorder).contains x := by
@@ -73,7 +114,6 @@ theorem contains_iff_contains {t : Raw α} (x : α) (h : Sorted t.inorder) :
   rw [List.contains_iff_mem]
   rw [contains_eq_true_iff_mem_of_bst]
   · apply mem_iff_mem
-    assumption
   · rw [bst_iff_sorted_inorder]
     assumption
 
@@ -139,7 +179,7 @@ theorem inorder_sorted {t : Set α} : Sorted (inorder t) :=
 
 @[simp]
 theorem inorder_empty : inorder (.empty : Set α) = [] :=
-  Raw.Model.inorder_nil
+  Raw.inorder_nil
 
 theorem inorder_insert_eq_insert_inorder {t : Set α} (x : α) :
     inorder (t.insert x) = sortedInsert (inorder t) x :=
@@ -150,7 +190,7 @@ theorem inorder_erase_eq_erase_inorder {t : Set α} (x : α) :
   Raw.Model.inorder_erase_eq_erase_inorder x inorder_sorted
 
 theorem mem_iff_mem {t : Set α} (x : α) : x ∈ t ↔ x ∈ (inorder t) :=
-  Raw.Model.mem_iff_mem x inorder_sorted
+  Raw.Model.mem_iff_mem x
 
 theorem contains_iff_contains {t : Set α} (x : α) : t.contains x = (inorder t).contains x :=
   Raw.Model.contains_iff_contains x inorder_sorted

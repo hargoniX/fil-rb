@@ -10,6 +10,10 @@ namespace Filrb
 namespace Internal
 namespace Raw
 
+@[simp]
+theorem Mem_iff_mem {x : α} {t : Raw α} : Mem x t ↔ x ∈ t := by 
+  rfl
+
 theorem mem_of_mem_left (x : α) (left : Raw α) (data : α) (color : Color) (right : Raw α) :
     x ∈ left → x ∈ (Raw.node left data color right) := by
   intro h
@@ -96,6 +100,28 @@ theorem contains_eq_true_iff_mem_of_bst {x : α} {t : Raw α} (h : BST t) :
   · apply mem_of_contains_eq_true
   · intro h
     apply contains_eq_true_of_mem <;> assumption
+
+omit [Ord α] [Preorder α] [LawfulOrd α]
+@[simp]
+theorem mem_nil {x : α} : ¬x ∈ Raw.nil := by
+  intro h
+  cases h
+
+@[simp]
+theorem mem_node {left right : Raw α} {color : Color} {data x : α} :
+    x ∈ (Raw.node left data color right) ↔ (x ∈ left ∨ x = data ∨ x ∈ right) := by
+  constructor
+  · intro h
+    cases h <;> simp_all
+  · intro h
+    rcases h with h1 | h2 | h3
+    · apply mem_of_mem_left
+      assumption
+    · apply mem_of_eq
+      assumption
+    · apply mem_of_mem_right
+      assumption
+
 
 end Raw
 end Internal
