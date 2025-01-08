@@ -26,16 +26,38 @@ variable [Preorder α] [Ord α] [LawfulOrd α]
 
 abbrev Sorted (l : List α) := List.Sorted (· < ·) l
 
-def sortedInsert (xs : List α) (x : α) : List α := sorry
-def sortedErase (xs : List α) (x : α) : List α := sorry
+def sortedInsert (xs : List α) (a : α) : List α :=
+  match xs with
+  | [] => [a]
+  | x :: xs =>
+    match cmp a x with
+    | .lt => a :: x :: xs
+    | .eq => a :: xs
+    | .gt => x :: sortedInsert xs a
+
+def sortedErase (xs : List α) (a : α) : List α :=
+  match xs with
+  | [] => []
+  | x :: xs =>
+    if x = a then
+      xs
+    else
+      x :: sortedErase xs a
 
 theorem bst_iff_sorted_inorder {t : Raw α} : t.BST ↔ Sorted t.inorder := sorry
 
 namespace Raw
 namespace Model
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[simp]
-theorem inorder_nil : (.nil : Raw α).inorder = [] := sorry
+theorem inorder_nil : (.nil : Raw α).inorder = [] := by
+  rfl
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem inorder_node : (.node l x c r : Raw α).inorder = inorder l ++ [x] ++ inorder r := by
+  rfl
 
 theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
     (t.insert x).inorder = sortedInsert t.inorder x := sorry
@@ -45,22 +67,40 @@ theorem inorder_erase_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inord
 
 theorem mem_iff_mem {t : Raw α} (x : α) (h : Sorted t.inorder) : x ∈ t ↔ x ∈ t.inorder := sorry
 
-theorem contains_iff_contains {t : Raw α} (x : α) (h : Sorted t.inorder) : t.contains x = (t.inorder).contains x :=
-  sorry
+theorem contains_iff_contains {t : Raw α} (x : α) (h : Sorted t.inorder) :
+    t.contains x = (t.inorder).contains x := by
+  rw [Bool.eq_iff_iff]
+  rw [List.contains_iff_mem]
+  rw [contains_eq_true_iff_mem_of_bst]
+  · apply mem_iff_mem
+    assumption
+  · rw [bst_iff_sorted_inorder]
+    assumption
 
-theorem isEmpty_eq_isEmpty {t : Raw α} : t.isEmpty = t.inorder.isEmpty := sorry
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem isEmpty_eq_isEmpty {t : Raw α} : t.isEmpty = t.inorder.isEmpty := by
+  cases t <;> simp [Raw.isEmpty]
 
 theorem size_eq_length {t : Raw α} : t.size = t.inorder.length := sorry
 
-theorem eq_nil_iff_nil {t : Raw α} : (t = .nil) ↔ t.inorder = [] := sorry
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem eq_nil_iff_nil {t : Raw α} : (t = .nil) ↔ t.inorder = [] := by
+  cases t <;> simp
 
-theorem nil_eq_iff_nil {t : Raw α} : (.nil = t) ↔ t.inorder = [] := sorry
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem nil_eq_iff_nil {t : Raw α} : (.nil = t) ↔ t.inorder = [] := by
+  cases t <;> simp
 
-theorem isEmpty_iff_eq_nil {xs : List α} : xs.isEmpty ↔ xs = [] := sorry
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem isEmpty_iff_eq_nil {xs : List α} : xs.isEmpty ↔ xs = [] := by
+  simp
 
 theorem isEmpty_sortedInsert {xs : List α} {k : α} (h : Sorted xs) :
-    (sortedInsert xs k).isEmpty = false :=
-  sorry
+    (sortedInsert xs k).isEmpty = false := by
+  cases xs
+  · simp [sortedInsert]
+  · rw [sortedInsert]
+    split <;> simp
 
 theorem mem_sortedInsert {xs : List α} (k a : α) (h : Sorted xs) :
     a ∈ sortedInsert xs k ↔ k = a ∨ a ∈ xs := sorry
@@ -74,10 +114,12 @@ theorem length_sortedInsert {xs : List α} (k : α) (h : Sorted xs) :
 theorem length_sortedErase {xs : List α} (k : α) (h : Sorted xs) :
     (sortedErase xs k).length = if k ∈ xs then xs.length - 1 else xs.length := sorry
 
-theorem isEmpty_eq_length_eq_zero {xs : List α} : xs.isEmpty = (xs.length == 0) :=
-  sorry
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem isEmpty_eq_length_eq_zero {xs : List α} : xs.isEmpty = (xs.length == 0) := by
+  cases xs <;> simp
 
-theorem sortedErase_nil {a : α} : sortedErase [] a = [] := sorry
+theorem sortedErase_nil {a : α} : sortedErase [] a = [] := by
+  simp [sortedErase]
 
 theorem isEmpty_sortedErase {xs : List α} {k : α} (h : Sorted xs) :
     (sortedErase xs k).isEmpty = (xs.isEmpty || xs.length == 1 && xs.contains k) :=
