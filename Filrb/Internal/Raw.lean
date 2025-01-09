@@ -31,6 +31,7 @@ Colors of red black tree nodes.
 inductive Color where
   | black
   | red
+  deriving DecidableEq
 
 /--
 The basic red black tree data structure without any invariant etc. attached.
@@ -73,6 +74,12 @@ def paintColor (c : Color) (t : Raw α) : Raw α :=
   match t with
   | .nil => .nil
   | .node l d _ r => .node l d c r
+
+@[inline]
+def isBlack (t : Raw α) : Bool :=
+  match t with
+  | .node _ _ .black _ => true
+  | _             => false
 
 -- Balanced insert into the left child, fixing red on red sequences on the way.
 @[inline]
@@ -157,14 +164,16 @@ def del (d : α) : Raw α → Raw α
   | .node left data _ right =>
     match compare d data with
     | .lt =>
-      match left with
-      | .node _ _ .black _ => baldL data (del d left) right
-      | _ => .node (del d left) data .red right
+      if left.isBlack then
+        baldL data (del d left) right
+      else
+        .node (del d left) data .red right
     | .eq => appendTrees left right
     | .gt =>
-      match right with
-      | .node _ _ .black _ => baldR data left (del d right)
-      | _ => .node left data .red (del d right)
+      if right.isBlack then
+        baldR data left (del d right)
+      else
+        .node left data .red (del d right)
 
 /--
 Erase `d` from `t`, if `d` is not in `t` leave it untouched.
