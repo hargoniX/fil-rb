@@ -25,6 +25,24 @@ omit [Ord α] [LawfulOrd α] in
 @[simp]
 theorem bst_nil : BST (.nil : Raw α) := BST.nil
 
+omit [Ord α] [LawfulOrd α] in
+theorem bst_color_independent {l r : Raw α} (h : BST (.node l d c r)) : BST (.node l d c' r) := by
+  cases h
+  apply BST.node <;> assumption
+
+omit [Ord α] [LawfulOrd α] in
+theorem bst_paintColor_of_bst (c : Color) (t : Raw α) (h : BST t) : BST (t.paintColor c) := by
+  unfold paintColor
+  split
+  . simp
+  . apply bst_color_independent h
+
+theorem bst_baliL_of_bsts (x : α) (t₁ t₂ : Raw α) (h₁ : BST t₁) (h₂ : BST t₂): BST (baliL x t₁ t₂) := by
+  sorry
+
+theorem bst_baliR_of_bsts (x : α) (t₁ t₂ : Raw α) (h₁ : BST t₁) (h₂ : BST t₂): BST (baliR x t₁ t₂) := by
+  sorry
+
 theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := sorry
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := sorry
 
