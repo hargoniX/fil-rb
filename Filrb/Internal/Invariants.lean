@@ -24,7 +24,69 @@ inductive BST : Raw α → Prop where
 omit [Ord α] [LawfulOrd α] in
 theorem bst_nil : BST (.nil : Raw α) := BST.nil
 
-theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := sorry
+
+omit [Ord α] [LawfulOrd α] in
+theorem bst_color_independent {l r : Raw α} (h : BST (.node l d c r)) : BST (.node l d c' r) := by
+  cases h
+  apply BST.node <;> assumption
+
+omit [Ord α] [LawfulOrd α] in
+theorem bst_paintColor_of_bst (c : Color) (t : Raw α) (h : BST t) : BST (t.paintColor c) := by
+  unfold paintColor
+  split
+  . assumption
+  . apply bst_color_independent h
+
+/- change of color won't change the membership of its nodes-/
+lemma node_color_independent (x d : α) (l r : Raw α) (h: x ∈ l.node d .black r) : x ∈ l.node d .red r := by sorry
+
+/- the balance-left operation preserves the bst property-/
+theorem bst_baliL_bst (tl tr  : Raw α) (hl : BST tl) (hr : BST tr) : BST (baliL d tl tr) := by
+      unfold baliL
+      split
+      · next hx1 hx ht1 hd1 ht2 hd2 ht3 => cases hl /- left-balance variant 1.-/
+                                           next hleft2 hleft1 hright2 hright1 =>
+                                            apply BST.node
+                                            · intro x hx
+                                              apply hleft1
+                                              apply node_color_independent; assumption
+                                            · apply bst_color_independent hleft2
+                                            · intro x hx
+                                              cases hx
+                                              · sorry-- hint : hd2 is the left tree, d is the root
+                                              · next hright2 =>sorry-- hint : x is a menber of ht3
+                                              · sorry-- hint : member of tr > d > t3
+                                            · apply BST.node
+                                              · sorry -- hint : ht3 is the left tree of root d
+                                              · assumption
+                                              · sorry -- hint : tr is the right tree of root d
+                                              · assumption
+      · next x1 x2 t1 d1 t2 d2 t3 hx => cases hl /- left-balance variant 2.-/
+                                        next hleft2 hleft1 hright2 hright1 =>
+                                          apply BST.node
+                                          · sorry--hint: after rotation, the left tree is smaller than the root
+                                          · sorry--hint: after rotation, the left tree is still a bst
+                                          · sorry--hint: after rotation, the right tree is bigger than the root
+                                          · sorry--hint: after rotation, the right tree is still a bst
+      · next h1 h2 h3 h4 => apply BST.node
+                            · intro x hx
+                              sorry --hint: left tree is smaller than root
+                            · assumption
+                            · intro x hx
+                              sorry --hint: right tree is bigger than root
+                            · assumption
+
+/- the balance-right operation preserves the bst property-/
+lemma bst_baliR_bst (tl tr  : Raw α) (hl : BST tl) (hr : BST tr) (d : α) : BST (baliR d tl (ins d tr)) := by sorry
+
+--lemma bst_ins_bst (d : α) (t : Raw α) (h : BST t) : := by sorry
+theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := by
+  induction t with
+  | nil => simp [insert, paintColor]
+           split
+           · exact h /- case1: if x is nil-/
+           · next t left data color right heq => sorry
+
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := sorry
 
 /--
@@ -70,7 +132,10 @@ theorem heightInv_insert_of_bst (x : α) (t : Raw α) (h : HeightInv t) : Height
 theorem heightInv_erase_of_bst (x : α) (t : Raw α) (h : HeightInv t) : HeightInv (t.erase x) := sorry
 
 theorem height_le_log_size {t : Raw α} (h1 : ChildInv t) (h2 : HeightInv t) :
-    t.height ≤ 2 * Nat.log 2 t.size + 2 := sorry
+    t.height ≤ 2 * Nat.log 2 t.size + 2 := by
+    induction t with
+    | nil => simp[height, size]
+    | node left data color right hleft hright => sorry
 
 end Raw
 end Internal
