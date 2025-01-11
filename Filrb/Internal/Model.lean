@@ -210,12 +210,25 @@ omit [LawfulOrd α] in
 theorem isEmpty_sortedInsert {xs : List α} {k : α} (h : Sorted xs) :
     (sortedInsert xs k).isEmpty = false := by
   cases xs
-  · simp [sortedInsert]
+  · simp
   · rw [sortedInsert]
     split <;> simp
 
 theorem mem_sortedInsert {xs : List α} (k a : α) (h : Sorted xs) :
-    a ∈ sortedInsert xs k ↔ k = a ∨ a ∈ xs := sorry
+    a ∈ sortedInsert xs k ↔ a = k ∨ a ∈ xs := by
+  induction xs with
+  | nil => simp
+  | cons x xs ih =>
+    rw [Sorted, List.sorted_cons] at h
+    specialize ih h.right
+    rcases lt_trichotomy k x with hlt | heq | hgt
+    · rw [sortedInsert_cons_lt]
+      · simp
+      · assumption
+    · simp [heq]
+    · rw [sortedInsert_cons_gt]
+      · aesop
+      · assumption
 
 theorem mem_sortedErase {xs : List α} (k a : α) (h : Sorted xs) :
     a ∈ sortedErase xs k ↔ a ≠ k ∧ a ∈ xs :=
@@ -318,7 +331,7 @@ theorem isEmpty_sortedInsert {t : Set α} {k : α} : (sortedInsert (inorder t) k
   Raw.Model.isEmpty_sortedInsert inorder_sorted
 
 theorem mem_sortedInsert {t : Set α} (k a : α) :
-    a ∈ sortedInsert (inorder t) k ↔ k = a ∨ a ∈ (inorder t) :=
+    a ∈ sortedInsert (inorder t) k ↔ a = k ∨ a ∈ (inorder t) :=
   Raw.Model.mem_sortedInsert k a inorder_sorted
 
 theorem mem_sortedErase {t : Set α} (k a : α) :

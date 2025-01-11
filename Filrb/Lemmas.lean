@@ -90,19 +90,19 @@ theorem isEmpty_iff_forall_contains : set.isEmpty = true ↔ ∀ a, set.contains
   simp [contains_eq_false_iff_not_mem, isEmpty_iff_forall_not_mem]
 
 @[simp]
-theorem mem_insert {k a : α} : a ∈ set.insert k ↔ k = a ∨ a ∈ set := by
+theorem mem_insert {k a : α} : a ∈ set.insert k ↔ a = k ∨ a ∈ set := by
   simp_to_model using mem_sortedInsert
 
 @[simp]
-theorem contains_insert {k a : α} : (set.insert k).contains a = (k = a ∨ set.contains a) := by
+theorem contains_insert {k a : α} : (set.insert k).contains a = (a = k ∨ set.contains a) := by
   simp [contains_eq_true_iff_mem]
 
-theorem mem_of_mem_insert {k a : α} : a ∈ set.insert k → k ≠ a → a ∈ set := by
+theorem mem_of_mem_insert {k a : α} : a ∈ set.insert k → a ≠ k → a ∈ set := by
   intro h1 h2
   simpa [h2] using h1
 
 theorem contains_of_contains_insert {k a : α} :
-    (set.insert k).contains a → k ≠ a → set.contains a := by
+    (set.insert k).contains a → a ≠ k → set.contains a := by
   rw [contains_eq_true_iff_mem, contains_eq_true_iff_mem]
   apply mem_of_mem_insert
 
