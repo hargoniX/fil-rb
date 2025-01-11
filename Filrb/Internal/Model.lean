@@ -35,14 +35,7 @@ def sortedInsert (xs : List α) (a : α) : List α :=
     | .eq => a :: xs
     | .gt => x :: sortedInsert xs a
 
-def sortedErase (xs : List α) (a : α) : List α :=
-  match xs with
-  | [] => []
-  | x :: xs =>
-    if x = a then
-      xs
-    else
-      x :: sortedErase xs a
+abbrev sortedErase (xs : List α) (a : α) : List α := List.erase xs a
 
 namespace Raw
 
@@ -173,20 +166,22 @@ theorem mem_sortedInsert {xs : List α} (k a : α) (h : Sorted xs) :
     a ∈ sortedInsert xs k ↔ k = a ∨ a ∈ xs := sorry
 
 theorem mem_sortedErase {xs : List α} (k a : α) (h : Sorted xs) :
-    a ∈ sortedErase xs k ↔ k ≠ a ∧ a ∈ xs := sorry
+    a ∈ sortedErase xs k ↔ a ≠ k ∧ a ∈ xs :=
+  List.Nodup.mem_erase_iff (List.Sorted.nodup h)
 
 theorem length_sortedInsert {xs : List α} (k : α) (h : Sorted xs) :
     (sortedInsert xs k).length = if k ∈ xs then xs.length else xs.length + 1 := sorry
 
-theorem length_sortedErase {xs : List α} (k : α) (h : Sorted xs) :
-    (sortedErase xs k).length = if k ∈ xs then xs.length - 1 else xs.length := sorry
+theorem length_sortedErase {xs : List α} (k : α) :
+    (sortedErase xs k).length = if k ∈ xs then xs.length - 1 else xs.length :=
+  List.length_erase ..
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem isEmpty_eq_length_eq_zero {xs : List α} : xs.isEmpty = (xs.length == 0) := by
   cases xs <;> simp
 
-theorem sortedErase_nil {a : α} : sortedErase [] a = [] := by
-  simp [sortedErase]
+theorem sortedErase_nil {a : α} : sortedErase [] a = [] :=
+  List.erase_nil ..
 
 theorem isEmpty_sortedErase {xs : List α} {k : α} (h : Sorted xs) :
     (sortedErase xs k).isEmpty = (xs.isEmpty || xs.length == 1 && xs.contains k) :=
@@ -262,7 +257,7 @@ theorem mem_sortedInsert {t : Set α} (k a : α) :
   Raw.Model.mem_sortedInsert k a inorder_sorted
 
 theorem mem_sortedErase {t : Set α} (k a : α) :
-    a ∈ sortedErase (inorder t) k ↔ k ≠ a ∧ a ∈ (inorder t) :=
+    a ∈ sortedErase (inorder t) k ↔ a ≠ k ∧ a ∈ (inorder t) :=
   Raw.Model.mem_sortedErase k a inorder_sorted
 
 theorem length_sortedInsert {t : Set α} (k : α) :
@@ -271,7 +266,7 @@ theorem length_sortedInsert {t : Set α} (k : α) :
 
 theorem length_sortedErase {t : Set α} (k : α) :
     (sortedErase (inorder t) k).length = if k ∈ (inorder t) then (inorder t).length - 1 else (inorder t).length :=
-  Raw.Model.length_sortedErase k inorder_sorted
+  Raw.Model.length_sortedErase k
 
 theorem isEmpty_eq_length_eq_zero {t : Set α} : (inorder t).isEmpty = ((inorder t).length == 0) :=
   Raw.Model.isEmpty_eq_length_eq_zero

@@ -149,11 +149,11 @@ theorem isEmpty_erase {k : α} :
   simp_to_model using isEmpty_sortedErase
 
 @[simp]
-theorem mem_erase {k a : α} : a ∈ set.erase k ↔ k ≠ a ∧ a ∈ set := by
+theorem mem_erase {k a : α} : a ∈ set.erase k ↔ a ≠ k ∧ a ∈ set := by
   simp_to_model using mem_sortedErase
 
 @[simp]
-theorem contains_erase {k a : α} : (set.erase k).contains a = (k ≠ a && set.contains a) := by
+theorem contains_erase {k a : α} : (set.erase k).contains a = (a ≠ k && set.contains a) := by
   simp [contains_eq_decide_mem]
 
 theorem mem_of_mem_erase {k a : α} : a ∈ set.erase k → a ∈ set := by
