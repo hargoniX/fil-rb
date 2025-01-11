@@ -11,6 +11,14 @@ namespace Internal
 
 namespace Raw
 
+@[simp]
+theorem size_nil : (.nil : Raw α).size = 0 := by
+  rfl
+
+@[simp]
+theorem size_node : (.node l d c r : Raw α).size = l.size + r.size + 1 := by
+  rfl
+
 variable [Preorder α] [Ord α] [LawfulOrd α]
 
 /--

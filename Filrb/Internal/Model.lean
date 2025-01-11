@@ -144,7 +144,11 @@ omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem isEmpty_eq_isEmpty {t : Raw α} : t.isEmpty = t.inorder.isEmpty := by
   cases t <;> simp [Raw.isEmpty]
 
-theorem size_eq_length {t : Raw α} : t.size = t.inorder.length := sorry
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem size_eq_length {t : Raw α} : t.size = t.inorder.length := by
+  induction t with
+  | nil => simp
+  | node l d c r lih rih => simp_arith [lih, rih]
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem eq_nil_iff_nil {t : Raw α} : (t = .nil) ↔ t.inorder = [] := by
