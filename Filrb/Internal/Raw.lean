@@ -46,6 +46,8 @@ inductive Raw (α : Type u) where
   -/
   | node (left : Raw α) (data : α) (color : Color) (right : Raw α) : Raw α
 
+attribute [pp_nodot] Raw.node
+
 namespace Raw
 
 /--
