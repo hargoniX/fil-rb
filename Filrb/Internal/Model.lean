@@ -116,10 +116,7 @@ namespace Raw
 namespace Model
 
 theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
-    (t.insert x).inorder = sortedInsert t.inorder x := by
-  induction t with
-  | nil => sorry
-  | node => sorry
+    (t.insert x).inorder = sortedInsert t.inorder x := sorry
 
 theorem inorder_erase_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
     (t.erase x).inorder = sortedErase t.inorder x := sorry
@@ -184,8 +181,18 @@ theorem sortedErase_nil {a : α} : sortedErase [] a = [] :=
   List.erase_nil ..
 
 theorem isEmpty_sortedErase {xs : List α} {k : α} (h : Sorted xs) :
-    (sortedErase xs k).isEmpty = (xs.isEmpty || xs.length == 1 && xs.contains k) :=
-  sorry
+    (sortedErase xs k).isEmpty = (xs.isEmpty || xs.length == 1 && xs.contains k) := by
+  rw [sortedErase, Bool.eq_iff_iff]
+  simp
+  constructor
+  · intro h
+    rcases h with h | h <;> simp [h]
+  · intro h
+    rcases h with h | h
+    · simp [h]
+    · cases xs
+      · simp
+      · aesop
 
 
 end Model
