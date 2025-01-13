@@ -1,5 +1,4 @@
 import Filrb.Internal.Raw
-import Filrb.Internal.Invariants
 
 /-!
 This module defines the notion of membership in a raw red black tree and proves that `Raw.contains`
@@ -11,7 +10,7 @@ namespace Internal
 namespace Raw
 
 @[simp]
-theorem Mem_iff_mem {x : α} {t : Raw α} : Mem x t ↔ x ∈ t := by 
+theorem Mem_iff_mem {x : α} {t : Raw α} : Mem x t ↔ x ∈ t := by
   rfl
 
 theorem mem_of_mem_left (x : α) (left : Raw α) (data : α) (color : Color) (right : Raw α) :

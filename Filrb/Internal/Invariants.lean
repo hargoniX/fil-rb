@@ -21,16 +21,6 @@ theorem size_node : (.node l d c r : Raw α).size = l.size + r.size + 1 := by
 
 variable [Preorder α] [Ord α] [LawfulOrd α]
 
-/--
-A tree is a binary search tree.
--/
-inductive BST : Raw α → Prop where
-  | nil : BST .nil
-  | node (hleft1 : ∀ x ∈ left, x < data) (hleft2 : BST left)
-         (hright1 : ∀ x ∈ right, data < x) (hright2 : BST right) : BST (.node left data color right)
-
-attribute [pp_nodot] BST
-
 omit [Ord α] [LawfulOrd α] in
 @[simp]
 theorem bst_nil : BST (.nil : Raw α) := BST.nil
