@@ -249,6 +249,16 @@ instance : Membership α (Raw α) where
   mem t x := Mem x t
 
 /--
+A tree is a binary search tree.
+-/
+inductive BST : Raw α → Prop where
+  | nil : BST .nil
+  | node (hleft1 : ∀ x ∈ left, x < data) (hleft2 : BST left)
+         (hright1 : ∀ x ∈ right, data < x) (hright2 : BST right) : BST (.node left data color right)
+
+attribute [pp_nodot] BST
+
+/--
 Returns the amount of elements in `t`.
 -/
 def size (t : Raw α) : Nat :=
