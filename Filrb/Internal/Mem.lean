@@ -31,6 +31,21 @@ theorem mem_of_eq (x : α) (left : Raw α) (data : α) (color : Color) (right : 
   rw [h]
   apply Mem.here
 
+theorem mem_color_independent (h : x ∈ (Raw.node l d c r)) : x ∈ (Raw.node l d c' r) := by
+  rcases h with _ | h | h
+  . simp [mem_of_eq]
+  . apply mem_of_mem_left
+    apply h
+  . apply mem_of_mem_right
+    apply h
+
+@[simp]
+theorem mem_iff_paintColor_mem (x : α) (c : Color) (t : Raw α) : x ∈ t.paintColor c  ↔ x ∈ t:= by
+  rcases t
+  . simp [paintColor]
+  . rw [paintColor]
+    constructor <;> apply mem_color_independent
+
 variable [Ord α]
 
 @[simp]
