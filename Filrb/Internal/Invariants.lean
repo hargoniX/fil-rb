@@ -27,6 +27,17 @@ omit [Ord α] [LawfulOrd α] in
 theorem bst_nil : BST (.nil : Raw α) := BST.nil
 
 omit [Ord α] [LawfulOrd α] in
+@[simp]
+theorem bst_node {l r : Raw α} :
+    BST (.node l d c r) ↔ (∀ x ∈ l, x < d) ∧ BST l ∧ (∀ x ∈ r, d < x) ∧ BST r := by
+  constructor
+  · intro h
+    cases h
+    simp_all
+  · rintro ⟨_, _, _, _⟩
+    apply BST.node <;> assumption
+
+omit [Ord α] [LawfulOrd α] in
 theorem bst_color_independent {l r : Raw α} (h : BST (.node l d c r)) : BST (.node l d c' r) := by
   cases h
   apply BST.node <;> assumption
@@ -158,32 +169,28 @@ theorem bst_appendTrees_of_bsts {t₁ t₂ : Raw α} (h₁ : BST t₁) (h₂ : B
 theorem mem_of_mem_baldL {d : α} (h : x ∈ baldL d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
   unfold baldL at h
   split at h
-  . rcases h  <;> simp_all
+  . aesop
   . have := mem_of_mem_baliR h
-    rcases this  <;> simp_all
+    aesop
   . rcases h with _ | h | h
     . simp
-    . rw [Mem_iff_mem] at h
-      rcases h with _ | h | h <;> simp_all
-    . rw [Mem_iff_mem] at h
-      have := mem_of_mem_baliR h
-      rcases this with h | h | h <;> simp_all
-  . rcases h  <;> simp_all
+    . aesop
+    . have := mem_of_mem_baliR h
+      aesop
+  . aesop
 
 theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
   unfold baldR at h
   split at h
-  . rcases h  <;> simp_all
+  . aesop
   . have := mem_of_mem_baliL h
-    rcases this  <;> simp_all
+    aesop
   . rcases h with _ | h | h
     . simp
-    . rw [Mem_iff_mem] at h
-      have := mem_of_mem_baliL h
-      rcases this with h | h | h <;> simp_all
-    . rw [Mem_iff_mem] at h
-      rcases h with _ | h | h <;> simp_all
-  . rcases h  <;> simp_all
+    . have := mem_of_mem_baliL h
+      aesop
+    . aesop
+  . aesop
 
 theorem mem_of_mem_appendTrees (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂  := by
   unfold appendTrees at h

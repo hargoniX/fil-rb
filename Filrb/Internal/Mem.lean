@@ -52,6 +52,28 @@ variable [Ord α]
 theorem nil_contains {x : α} : Raw.nil.contains x = false := by
   simp [contains]
 
+omit [Ord α] in
+@[simp]
+theorem mem_nil {x : α} : ¬x ∈ Raw.nil := by
+  intro h
+  cases h
+
+omit [Ord α] in
+@[simp]
+theorem mem_node {left right : Raw α} {color : Color} {data x : α} :
+    x ∈ (Raw.node left data color right) ↔ (x ∈ left ∨ x = data ∨ x ∈ right) := by
+  constructor
+  · intro h
+    cases h <;> simp_all
+  · intro h
+    rcases h with h1 | h2 | h3
+    · apply mem_of_mem_left
+      assumption
+    · apply mem_of_eq
+      assumption
+    · apply mem_of_mem_right
+      assumption
+
 variable [Preorder α] [LawfulOrd α]
 
 theorem mem_of_contains_eq_true {x : α} {t : Raw α} (h1 : t.contains x = true) :
@@ -114,28 +136,6 @@ theorem contains_eq_true_iff_mem_of_bst {x : α} {t : Raw α} (h : BST t) :
   · apply mem_of_contains_eq_true
   · intro h
     apply contains_eq_true_of_mem <;> assumption
-
-omit [Ord α] [Preorder α] [LawfulOrd α]
-@[simp]
-theorem mem_nil {x : α} : ¬x ∈ Raw.nil := by
-  intro h
-  cases h
-
-@[simp]
-theorem mem_node {left right : Raw α} {color : Color} {data x : α} :
-    x ∈ (Raw.node left data color right) ↔ (x ∈ left ∨ x = data ∨ x ∈ right) := by
-  constructor
-  · intro h
-    cases h <;> simp_all
-  · intro h
-    rcases h with h1 | h2 | h3
-    · apply mem_of_mem_left
-      assumption
-    · apply mem_of_eq
-      assumption
-    · apply mem_of_mem_right
-      assumption
-
 
 end Raw
 end Internal
