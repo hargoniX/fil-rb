@@ -140,8 +140,8 @@ def baldR (d : α) : Raw α → Raw α → Raw α
       .node left d .red (.node t₁ data .black t₂)
   | .node t₁ data .black t₂, right =>
       baliL d (.node t₁ data .red t₂) right
-  | .node  t₁ data₁ .red (.node t₂ data₂ .black t₃), right =>
-      .node (baliL data₁ (paintColor .red t₁) t₂) data₁ .red (.node t₃ data₂ .black right)
+  | .node t₁ data₁ .red (.node t₂ data₂ .black t₃), right =>
+      .node (baliL data₁ (paintColor .red t₁) t₂) data₂ .red (.node t₃ d .black right)
   | left, right => .node left d .red right
 
 -- Appends one tree to another while painting the correct color
