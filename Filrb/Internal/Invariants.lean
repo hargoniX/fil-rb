@@ -38,10 +38,14 @@ theorem bst_paintColor_of_bst (c : Color) (t : Raw α) (h : BST t) : BST (t.pain
   . apply bst_color_independent h
 
 /- change of color won't change the membership of its nodes-/
-lemma node_color_independent (x d : α) (l r : Raw α) (h: x ∈ l.node d .black r) : x ∈ l.node d .red r := by sorry
+lemma node_color_independent (x d : α) (l r : Raw α) (h: x ∈ l.node d .black r) : x ∈ l.node d .red r := by
+  cases h
+  · apply Mem.here
+  · apply Mem.left; assumption
+  · apply Mem.right; assumption
 
 /- the balance-left operation preserves the bst property-/
-theorem bst_baliL_bst (tl tr  : Raw α) (hl : BST tl) (hr : BST tr) : BST (baliL d tl tr) := by
+theorem bst_baliL_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < d) (Hr : ∀ x ∈ tr, d < x) : BST (baliL d tl tr) := by
       unfold baliL
       split
       · next hx1 hx ht1 hd1 ht2 hd2 ht3 => cases hl /- left-balance variant 1.-/
@@ -53,13 +57,17 @@ theorem bst_baliL_bst (tl tr  : Raw α) (hl : BST tl) (hr : BST tr) : BST (baliL
                                             · apply bst_color_independent hleft2
                                             · intro x hx
                                               cases hx
-                                              · sorry-- hint : hd2 is the left tree, d is the root
-                                              · next hright2 =>sorry-- hint : x is a menber of ht3
-                                              · sorry-- hint : member of tr > d > t3
+                                              · apply Hl; apply Mem.here
+                                              · next hright2 => apply hright1; apply hright2
+                                              · next hright3 => have h : x ∈ tr := by apply hright3
+                                                                apply lt_trans _ (Hr x h)
+                                                                apply Hl; apply Mem.here
                                             · apply BST.node
-                                              · sorry -- hint : ht3 is the left tree of root d
+                                              · intro x hx
+                                                apply (Hl  x (by sorry))-- hint : ht3 is the left tree of root d
                                               · assumption
-                                              · sorry -- hint : tr is the right tree of root d
+                                              · intro x hx
+                                                apply Hr x; assumption
                                               · assumption
       · next x1 x2 t1 d1 t2 d2 t3 hx => cases hl /- left-balance variant 2.-/
                                         next hleft2 hleft1 hright2 hright1 =>
@@ -77,15 +85,31 @@ theorem bst_baliL_bst (tl tr  : Raw α) (hl : BST tl) (hr : BST tr) : BST (baliL
                             · assumption
 
 /- the balance-right operation preserves the bst property-/
-lemma bst_baliR_bst (tl tr  : Raw α) (hl : BST tl) (hr : BST tr) (d : α) : BST (baliR d tl (ins d tr)) := by sorry
+lemma bst_baliR_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (d : α) (Hl : ∀ x ∈ tl, x < d) (Hr : ∀ x ∈ tr, d < x) : BST (baliR d tl (ins d tr)) := by sorry
 
---lemma bst_ins_bst (d : α) (t : Raw α) (h : BST t) : := by sorry
+/- the ins operation preserves the bst property-/
+lemma bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
+  unfold ins
+  split
+  · apply BST.node
+    · intro x hx; contradiction
+    · apply BST.nil
+    · intro x hx; contradiction
+    · apply BST.nil
+  · split
+    · apply bst_baliL_bst
+      · sorry
+      · sorry
+      · sorry
+      · sorry
+    · assumption
+    · sorry
+
+/- the insertion operation preserves the bst property-/
 theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := by
-  induction t with
-  | nil => simp [insert, paintColor]
-           split
-           · exact h /- case1: if x is nil-/
-           · next t left data color right heq => sorry
+  unfold insert
+  apply bst_paintColor_of_bst
+  apply bst_ins_bst; assumption
 
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := sorry
 
