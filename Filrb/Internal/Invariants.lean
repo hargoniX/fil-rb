@@ -72,6 +72,7 @@ omit [Preorder α] [LawfulOrd α] in
 theorem erase_nil : erase x (.nil : Raw α) = .nil := by
   simp [erase, paintColor, del]
 
+@[aesop safe apply]
 theorem bst_baldL_of_bsts (x : α) (left right : Raw α)
     (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
     (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baldL x left right) := by
@@ -124,6 +125,7 @@ theorem bst_baldL_of_bsts (x : α) (left right : Raw α)
           assumption
   . apply BST.node hleft1 hleft2 hright1 hright2
 
+@[aesop safe apply]
 theorem bst_baldR_of_bsts (x : α) (left right : Raw α)
     (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
     (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baldR x left right) := by
@@ -149,6 +151,7 @@ theorem bst_baldR_of_bsts (x : α) (left right : Raw α)
   . sorry
   . apply BST.node hleft1 hleft2 hright1 hright2
 
+@[aesop safe apply]
 theorem bst_appendTrees_of_bsts {t₁ t₂ : Raw α} (h₁ : BST t₁) (h₂ : BST t₂): BST (appendTrees t₁ t₂) := by
   unfold appendTrees
   split
@@ -166,6 +169,7 @@ theorem bst_appendTrees_of_bsts {t₁ t₂ : Raw α} (h₁ : BST t₁) (h₂ : B
   . sorry
   . sorry
 
+@[aesop safe forward]
 theorem mem_of_mem_baldL {d : α} (h : x ∈ baldL d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
   unfold baldL at h
   split at h
@@ -179,6 +183,7 @@ theorem mem_of_mem_baldL {d : α} (h : x ∈ baldL d t₁ t₂) : x ∈ t₁ ∨
       aesop
   . aesop
 
+@[aesop safe forward]
 theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
   unfold baldR at h
   split at h
@@ -192,6 +197,7 @@ theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨
     . aesop
   . aesop
 
+@[aesop safe forward]
 theorem mem_of_mem_appendTrees (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂  := by
   unfold appendTrees at h
   split at h
@@ -214,39 +220,15 @@ theorem mem_of_mem_appendTrees (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ �
   . sorry
   . sorry
 
+@[aesop safe forward]
 theorem mem_of_mem_del {d : α} (h : x ∈ del d t) : x ∈ t := by
   unfold del at h
   split at h
   . assumption
   . split at h
-    . split at h
-      . have := mem_of_mem_baldL h
-        rcases this with h | h | h
-        . apply mem_of_mem_left
-          apply mem_of_mem_del h
-        . simp [h]
-        . simp [h]
-      . rcases h with _ | h | h
-        . simp
-        . apply mem_of_mem_left
-          apply mem_of_mem_del h
-        . apply mem_of_mem_right
-          apply h
-    . have := mem_of_mem_appendTrees h
-      rcases this with h | h <;> simp [h]
-    . split at h
-      . have := mem_of_mem_baldR h
-        rcases this with h | h | h
-        . simp [h]
-        . apply mem_of_mem_right
-          apply mem_of_mem_del h
-        . simp [h]
-      . rcases h with _ | h | h
-        . simp
-        . apply mem_of_mem_left
-          apply h
-        . apply mem_of_mem_right
-          apply mem_of_mem_del h
+    . split at h <;> aesop (add safe forward mem_of_mem_del)
+    . aesop
+    . split at h <;> aesop (add safe forward mem_of_mem_del)
 
 theorem bst_del_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.del x) := by
   unfold del
@@ -254,53 +236,9 @@ theorem bst_del_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.del x) := by
   . assumption
   . cases h
     split
-    . split
-      . apply bst_baldL_of_bsts
-        . next _ h _ _ _  _ _ =>
-          intro x hdel
-          apply h
-          exact mem_of_mem_del hdel
-        . apply bst_del_of_bst
-          assumption
-        . next _ _ _ h _  _ _ =>
-          intro x hdel
-          apply h
-          assumption
-        . assumption
-      . apply BST.node
-        . next _ h _ _ _  _ _ =>
-          intro x hdel
-          apply h
-          exact mem_of_mem_del hdel
-        . apply bst_del_of_bst
-          assumption
-        . assumption
-        . assumption
-    . apply bst_appendTrees_of_bsts
-      . assumption
-      . assumption
-    . split
-      . apply bst_baldR_of_bsts
-        . next _ h _ _ _  _ _ =>
-          intro x hdel
-          apply h
-          assumption
-        . assumption
-        . next _ _ _ h _  _ _ =>
-          intro x hdel
-          apply h
-          exact mem_of_mem_del hdel
-        . apply bst_del_of_bst
-          assumption
-      . apply BST.node
-        . assumption
-        . assumption
-        . next _ _ _ h _  _ _ =>
-          intro x hdel
-          apply h
-          exact mem_of_mem_del hdel
-        . apply bst_del_of_bst
-          assumption
+    . split <;> aesop (add safe apply bst_del_of_bst)
+    . aesop
+    . split <;> aesop (add safe apply bst_del_of_bst)
 
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := by
   unfold erase
