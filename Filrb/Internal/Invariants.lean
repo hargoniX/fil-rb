@@ -96,8 +96,11 @@ theorem bst_baliL_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x �
 /- the balance-right operation preserves the bst property-/
 lemma bst_baliR_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < d) (Hr : ∀ x ∈ tr, d < x) : BST (baliR d tl tr) := by sorry
 
+lemma x_lt_data_ins (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < data) (Hr : ∀ x ∈ tr, data < x) : x ∈ ins d left → x < data := sorry
+
+lemma x_gt_data_ins (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < data) (Hr : ∀ x ∈ tr, data < x) : x ∈ ins d right → data < x := sorry
 /- the ins operation preserves the bst property-/
-lemma bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
+theorem bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
   unfold ins
   split
   · apply BST.node
@@ -110,9 +113,10 @@ lemma bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
       · next t left data right p heq => apply bst_ins_bst
                                         cases h; assumption
       · next t left data right p heq => cases h; assumption
-      · next t left data right p heq => intro x hx
-                                        cases h
-                                        next hleft2 hleft1 hright2 hright1 => sorry
+      · next t left data right p heq => cases h
+                                        next hleft2 hleft1 hright2 hright1 => intro x
+                                                                              apply x_lt_data_ins left right hleft2 hright2
+                                                                              assumption; assumption
       · next t left data right p heq => cases h; assumption
     · assumption
     · apply bst_baliR_bst
@@ -120,18 +124,27 @@ lemma bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
       · next t left data right p heq => apply bst_ins_bst
                                         cases h; assumption
       · next t left data right p heq => cases h; assumption
-      · next t left data right p heq => sorry
+      · next t left data right p heq => cases h
+                                        intro x
+                                        apply x_gt_data_ins left right
+                                        assumption; assumption; assumption; assumption
+
+
   · split
     · next t left data right p heq => apply BST.node
-                                      · sorry
+                                      · cases h
+                                        intro x
+                                        apply x_lt_data_ins left right
+                                        assumption; assumption; assumption; assumption
                                       · apply bst_ins_bst; cases h; assumption
-                                      · sorry
+                                      · cases h; assumption
                                       · cases h; assumption
     · assumption
     · next t left data right p heq => apply BST.node
-                                      · sorry
                                       · cases h; assumption
-                                      · sorry
+                                      · cases h; assumption
+                                      · cases h; intro x; apply x_gt_data_ins left right
+                                        assumption; assumption; assumption; assumption
                                       · apply bst_ins_bst; cases h; assumption
 
 /- the insertion operation preserves the bst property-/
