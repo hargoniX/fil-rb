@@ -79,7 +79,7 @@ theorem bst_baliL_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x �
                                             · apply hright1 d2; apply Mem.here
                                             · next hleft => have h : x ∈ t1 := by apply hleft
                                                             apply lt_trans (hleft1 x h) (by apply hright1 d2; apply Mem.here)
-                                            · next hright => have h : ∀ x ∈ t2, x < d2 := by sorry
+                                            · next hright => have h : ∀ x ∈ t2, x < d2 := by cases hright2; assumption
                                                              apply h x
                                                              apply hright
                                           · sorry--hint: after rotation, the left tree is still a bst
@@ -94,7 +94,7 @@ theorem bst_baliL_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x �
                             · assumption
 
 /- the balance-right operation preserves the bst property-/
-lemma bst_baliR_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (d : α) (Hl : ∀ x ∈ tl, x < d) (Hr : ∀ x ∈ tr, d < x) : BST (baliR d tl (ins d tr)) := by sorry
+lemma bst_baliR_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < d) (Hr : ∀ x ∈ tr, d < x) : BST (baliR d tl tr) := by sorry
 
 /- the ins operation preserves the bst property-/
 lemma bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
@@ -107,12 +107,32 @@ lemma bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
     · apply BST.nil
   · split
     · apply bst_baliL_bst
-      · sorry
-      · sorry
-      · sorry
-      · sorry
+      · next t left data right p heq => apply bst_ins_bst
+                                        cases h; assumption
+      · next t left data right p heq => cases h; assumption
+      · next t left data right p heq => intro x hx
+                                        cases h
+                                        next hleft2 hleft1 hright2 hright1 => sorry
+      · next t left data right p heq => cases h; assumption
     · assumption
-    · sorry
+    · apply bst_baliR_bst
+      · cases h; assumption
+      · next t left data right p heq => apply bst_ins_bst
+                                        cases h; assumption
+      · next t left data right p heq => cases h; assumption
+      · next t left data right p heq => sorry
+  · split
+    · next t left data right p heq => apply BST.node
+                                      · sorry
+                                      · apply bst_ins_bst; cases h; assumption
+                                      · sorry
+                                      · cases h; assumption
+    · assumption
+    · next t left data right p heq => apply BST.node
+                                      · sorry
+                                      · cases h; assumption
+                                      · sorry
+                                      · apply bst_ins_bst; cases h; assumption
 
 /- the insertion operation preserves the bst property-/
 theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := by
