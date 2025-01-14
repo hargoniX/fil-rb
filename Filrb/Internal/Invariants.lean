@@ -64,7 +64,9 @@ theorem bst_baliL_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x �
                                                                 apply Hl; apply Mem.here
                                             · apply BST.node
                                               · intro x hx
-                                                apply (Hl  x (by sorry))-- hint : ht3 is the left tree of root d
+                                                apply (Hl  x (_))
+                                                apply Mem.right
+                                                apply hx
                                               · assumption
                                               · intro x hx
                                                 apply Hr x; assumption
@@ -72,7 +74,14 @@ theorem bst_baliL_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x �
       · next x1 x2 t1 d1 t2 d2 t3 hx => cases hl /- left-balance variant 2.-/
                                         next hleft2 hleft1 hright2 hright1 =>
                                           apply BST.node
-                                          · sorry--hint: after rotation, the left tree is smaller than the root
+                                          · intro x h
+                                            cases h
+                                            · apply hright1 d2; apply Mem.here
+                                            · next hleft => have h : x ∈ t1 := by apply hleft
+                                                            apply lt_trans (hleft1 x h) (by apply hright1 d2; apply Mem.here)
+                                            · next hright => have h : ∀ x ∈ t2, x < d2 := by sorry
+                                                             apply h x
+                                                             apply hright
                                           · sorry--hint: after rotation, the left tree is still a bst
                                           · sorry--hint: after rotation, the right tree is bigger than the root
                                           · sorry--hint: after rotation, the right tree is still a bst
