@@ -188,9 +188,12 @@ theorem bst_baldR_of_bsts (x : α) (left right : Raw α)
   . apply BST.node hleft1 hleft2 hright1 hright2
 
 theorem appendTrees_root {left right : Raw α} (heq : appendTrees left right = .node l d c r) :
-    ∀ x, x ∈ left ∨ x ∈ right ↔ x ∈ l ∨ x ∈ r ∨ x = d := by
-  --aesop (add norm appendTrees)
-  sorry
+    ∀ x, x ∈ l ∨ x = d ∨ x ∈ r → x ∈ left ∨ x ∈ right := by
+  intro x
+  have : x ∈ appendTrees left right ↔ x ∈ Raw.node l d c r := by rw [heq]
+  rw [mem_node] at this
+  rw [← this]
+  apply mem_of_mem_appendTrees
 
 -- aesop really seems to struggle here performance wise
 set_option maxHeartbeats 0 in
@@ -210,20 +213,20 @@ theorem bst_appendTrees_of_bsts {left right : Raw α} (hleft : BST left) (hright
       refine ⟨?_,⟨?_,?_⟩,?_,?_,?_⟩
       . intro x h
         have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
-        have mem_data3 := (memAppendTrees data3).mpr (by simp)
+        have mem_data3 := memAppendTrees data3 (by simp)
         rcases h with h | h | h
         . apply lt_trans (hleft.left x h) _
           cases mem_data3 <;> aesop
         . cases mem_data3 <;> aesop
         . aesop
       . intro x h
-        have mem_subtree := (memAppendTrees x).mpr (by simp [h])
+        have mem_subtree := memAppendTrees x (by simp [h])
         cases mem_subtree <;> aesop
       . have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
         aesop
       . intro x h
         have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
-        have mem_data3 := (memAppendTrees data3).mpr (by simp)
+        have mem_data3 := memAppendTrees data3 (by simp)
         rcases h with h | h | h
         . aesop
         . cases mem_data3 <;> aesop
@@ -231,7 +234,7 @@ theorem bst_appendTrees_of_bsts {left right : Raw α} (hleft : BST left) (hright
           apply lt_trans _ (this x h)
           cases mem_data3 <;> aesop
       . intro x h
-        have mem_subtree := (memAppendTrees x).mpr (by simp [h])
+        have mem_subtree := memAppendTrees x (by simp [h])
         cases mem_subtree <;> aesop
       . have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
         aesop
@@ -246,20 +249,20 @@ theorem bst_appendTrees_of_bsts {left right : Raw α} (hleft : BST left) (hright
       refine ⟨?_,⟨?_,?_⟩,?_,?_,?_⟩
       . intro x h
         have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
-        have mem_data3 := (memAppendTrees data3).mpr (by simp)
+        have mem_data3 := memAppendTrees data3 (by simp)
         rcases h with h | h | h
         . apply lt_trans (hleft.left x h) _
           cases mem_data3 <;> aesop
         . cases mem_data3 <;> aesop
         . aesop
       . intro x h
-        have mem_subtree := (memAppendTrees x).mpr (by simp [h])
+        have mem_subtree := memAppendTrees x (by simp [h])
         cases mem_subtree <;> aesop
       . have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
         aesop
       . intro x h
         have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
-        have mem_data3 := (memAppendTrees data3).mpr (by simp)
+        have mem_data3 := memAppendTrees data3 (by simp)
         rcases h with h | h | h
         . aesop
         . cases mem_data3 <;> aesop
@@ -267,7 +270,7 @@ theorem bst_appendTrees_of_bsts {left right : Raw α} (hleft : BST left) (hright
           apply lt_trans _ (this x h)
           cases mem_data3 <;> aesop
       . intro x h
-        have mem_subtree := (memAppendTrees x).mpr (by simp [h])
+        have mem_subtree := memAppendTrees x (by simp [h])
         cases mem_subtree <;> aesop
       . have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
         aesop
