@@ -125,6 +125,7 @@ theorem mem_of_mem_del {d : α} (h : x ∈ del d t) : x ∈ t := by
     . split at h <;> aesop (add safe forward mem_of_mem_del)
     . aesop
     . split at h <;> aesop (add safe forward mem_of_mem_del)
+termination_by t
 
 @[aesop safe apply]
 theorem bst_baldL_of_bsts (x : α) (left right : Raw α)
@@ -191,6 +192,8 @@ theorem appendTrees_root {left right : Raw α} (heq : appendTrees left right = .
   --aesop (add norm appendTrees)
   sorry
 
+-- aesop really seems to struggle here performance wise
+set_option maxHeartbeats 0 in
 @[aesop safe apply]
 theorem bst_appendTrees_of_bsts {left right : Raw α} (hleft : BST left) (hright : BST right)
     (hord : ∀ y ∈ left, ∀ x ∈ right, y < x) : BST (appendTrees left right) := by
@@ -271,6 +274,7 @@ theorem bst_appendTrees_of_bsts {left right : Raw α} (hleft : BST left) (hright
     . aesop (add norm appendTrees, safe bst_appendTrees_of_bsts)
   . aesop (add norm appendTrees, safe bst_appendTrees_of_bsts)
   . aesop (add norm appendTrees, safe bst_appendTrees_of_bsts)
+termination_by (left, right)
 
 theorem bst_del_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.del x) := by
   unfold del
@@ -281,6 +285,7 @@ theorem bst_del_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.del x) := by
     . have := bst_ordered h
       aesop
     . split <;> aesop (add safe apply bst_del_of_bst)
+termination_by t
 
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := by
   unfold erase
