@@ -152,13 +152,13 @@ def appendTrees : Raw α → Raw α → Raw α
     match appendTrees right₁ left₂ with
     | .node left₃ data₃ .red right₃ =>
         .node (.node left₁ data₁ .red left₃) data₃ .red (.node right₃ data₂ .red right₂)
-    | t                   => .node left₁ data₁ .red (.node t data₂ .red right₂)
+    | t                             => .node left₁ data₁ .red (.node t data₂ .red right₂)
   | .node left₁ data₁ .black right₁, .node left₂ data₂ .black right₂ =>
     match appendTrees right₁ left₂ with
     | .node left₃ data₃ .red right₃ =>
-        .node (node left₁ data₁ .black left₃) data₃ .red (node right₃ data₂ .black right₂)
-    | t                   => baldL data₁ left₁ (node t data₂ .black right₂)
-  | t, .node left data .red right => node (appendTrees t left) data .red right
+        .node (node left₁ data₁ .black left₃) data₃ .red (.node right₃ data₂ .black right₂)
+    | t                             => baldL data₁ left₁ (.node t data₂ .black right₂)
+  | t, .node left data .red right => .node (appendTrees t left) data .red right
   | .node left data .red right, t => .node left data .red (appendTrees right t)
 
 def del (d : α) : Raw α → Raw α

@@ -38,16 +38,27 @@ theorem bst_node {l r : Raw α} :
     apply BST.node <;> assumption
 
 omit [Ord α] [LawfulOrd α] in
+theorem bst_ordered {l r : Raw α} (h : BST (.node l d c r)) : ∀ x ∈ l, ∀ y ∈ r, x < y := by
+  intro l hl r hr
+  cases h with
+  | node hl1 hl2 hr1 hr2 =>
+    apply lt_trans (hl1 l hl) _
+    apply hr1
+    assumption
+
+omit [Ord α] [LawfulOrd α] in
 theorem bst_color_independent {l r : Raw α} (h : BST (.node l d c r)) : BST (.node l d c' r) := by
   cases h
   apply BST.node <;> assumption
 
 omit [Ord α] [LawfulOrd α] in
+@[aesop safe apply]
 theorem bst_paintColor_of_bst (c : Color) (t : Raw α) (h : BST t) : BST (t.paintColor c) := by
   unfold paintColor
   split
   . assumption
   . apply bst_color_independent h
+
 
 /- the balance-left operation preserves the bst property-/
 @[aesop safe apply]
@@ -160,103 +171,6 @@ omit [Preorder α] [LawfulOrd α] in
 theorem erase_nil : erase x (.nil : Raw α) = .nil := by
   simp [erase, paintColor, del]
 
-@[aesop safe apply]
-theorem bst_baldL_of_bsts (x : α) (left right : Raw α)
-    (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
-    (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baldL x left right) := by
-  unfold baldL
-  split
-  . apply BST.node
-    . intro x hmem
-      apply hleft1
-      apply mem_color_independent
-      assumption
-    . apply bst_color_independent
-      assumption
-    . intro x hmem
-      apply hright1
-      assumption
-    . assumption
-  . apply bst_baliR_of_bst
-    . sorry
-    . assumption
-    . sorry
-    . apply bst_color_independent
-      assumption
-  . cases hright2
-    next hl1 hl2 _ hr2 =>
-      apply BST.node
-      . intro x hmem
-        cases hl1
-        next _ hll2 _ hlr2 =>
-          rcases hmem with _ | h | h
-          . simp_all -- case doesnt happen
-          . simp at h
-            have x_lt_x3:= hleft1 x h
-            have h1 := hright1
-            sorry
-          . simp_all -- case doesnt happen
-      . apply BST.node hleft1 hleft2
-        . intro x hmem
-          apply hright1
-          simp [hmem]
-        . cases hl1
-          assumption
-      . intro x hmem
-        sorry
-      . apply bst_baliR_of_bst
-        . sorry
-        . cases hl1
-          assumption
-        . sorry
-        . apply bst_paintColor_of_bst
-          assumption
-  . apply BST.node hleft1 hleft2 hright1 hright2
-
-@[aesop safe apply]
-theorem bst_baldR_of_bsts (x : α) (left right : Raw α)
-    (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
-    (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baldR x left right) := by
-  unfold baldR
-  split
-  . apply BST.node
-    . intro x hmem
-      apply hleft1
-      assumption
-    . assumption
-    . intro x hmem
-      apply hright1
-      apply mem_color_independent
-      assumption
-    . apply bst_color_independent
-      assumption
-  . apply bst_baliL_of_bsts
-    . sorry
-    . apply bst_color_independent
-      assumption
-    . assumption
-    . sorry
-  . sorry
-  . apply BST.node hleft1 hleft2 hright1 hright2
-
-@[aesop safe apply]
-theorem bst_appendTrees_of_bsts {t₁ t₂ : Raw α} (h₁ : BST t₁) (h₂ : BST t₂): BST (appendTrees t₁ t₂) := by
-  unfold appendTrees
-  split
-  . assumption
-  . assumption
-  . split
-    . next h =>
-      apply BST.node
-      . sorry
-      . sorry
-      . sorry
-      . sorry
-    . next h => sorry
-  . sorry
-  . sorry
-  . sorry
-
 @[aesop safe forward]
 theorem mem_of_mem_baldL {d : α} (h : x ∈ baldL d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
   unfold baldL at h
@@ -286,27 +200,8 @@ theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨
   . aesop
 
 @[aesop safe forward]
-theorem mem_of_mem_appendTrees (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂  := by
-  unfold appendTrees at h
-  split at h
-  . simp [h]
-  . simp [h]
-  . split at h
-    . next heq =>
-        rcases h with _ | h | h
-        . sorry
-        . simp at h
-          rcases h with h | h | h
-          . simp_all
-          . simp_all
-          . sorry
-        . sorry
-    . sorry
-  . split at h
-    . sorry
-    . sorry
-  . sorry
-  . sorry
+theorem mem_of_mem_appendTrees {t₁ t₂ : Raw α} (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂  := by
+  induction t₁, t₂ using appendTrees.induct <;> aesop (add safe h, norm appendTrees)
 
 @[aesop safe forward]
 theorem mem_of_mem_del {d : α} (h : x ∈ del d t) : x ∈ t := by
@@ -317,16 +212,170 @@ theorem mem_of_mem_del {d : α} (h : x ∈ del d t) : x ∈ t := by
     . split at h <;> aesop (add safe forward mem_of_mem_del)
     . aesop
     . split at h <;> aesop (add safe forward mem_of_mem_del)
+termination_by t
+
+@[aesop safe apply]
+theorem bst_baldL_of_bsts (x : α) (left right : Raw α)
+    (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
+    (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baldL x left right) := by
+  unfold baldL
+  split
+  . aesop
+  . aesop
+  . cases hright2
+    next hl1 hl2 _ hr2 =>
+      apply BST.node
+      . intro x hmem
+        rcases hmem with _ | h | h
+        . simp_all
+        . apply lt_trans (hleft1 x h) _
+          apply hright1
+          simp
+        . simp_all
+      . aesop
+      . intro x hmem
+        have := mem_of_mem_baliR hmem
+        rcases this with h | h | h
+        . simp_all
+        . rw [mem_iff_paintColor_mem] at h
+          apply lt_trans _ (hr2 x h)
+          simp_all
+        . simp_all
+      . aesop
+  . apply BST.node hleft1 hleft2 hright1 hright2
+
+@[aesop safe apply]
+theorem bst_baldR_of_bsts (x : α) (left right : Raw α)
+    (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
+    (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baldR x left right) := by
+  unfold baldR
+  split
+  . aesop
+  . aesop
+  . cases hleft2
+    next hl1 hl2 _ hr2 =>
+      apply BST.node
+      . intro x hmem
+        have := mem_of_mem_baliL hmem
+        rcases this with h | h | h
+        . rw [mem_iff_paintColor_mem] at h
+          apply lt_trans (hl2 x h) _
+          simp_all
+        . simp_all
+        . simp_all
+      . aesop
+      . intro x hmem
+        rcases hmem with _ | h | h
+        . simp_all
+        . simp_all
+        . apply lt_trans _ (hright1 x h)
+          apply hleft1
+          simp
+      . aesop
+  . apply BST.node hleft1 hleft2 hright1 hright2
+
+theorem appendTrees_root {left right : Raw α} (heq : appendTrees left right = .node l d c r) :
+    ∀ x, x ∈ l ∨ x = d ∨ x ∈ r → x ∈ left ∨ x ∈ right := by
+  intro x
+  have : x ∈ appendTrees left right ↔ x ∈ Raw.node l d c r := by rw [heq]
+  rw [mem_node] at this
+  rw [← this]
+  apply mem_of_mem_appendTrees
+
+-- aesop really seems to struggle here performance wise
+set_option maxHeartbeats 0 in
+@[aesop safe apply]
+theorem bst_appendTrees_of_bsts {left right : Raw α} (hleft : BST left) (hright : BST right)
+    (hord : ∀ y ∈ left, ∀ x ∈ right, y < x) : BST (appendTrees left right) := by
+  unfold appendTrees
+  split
+  . assumption
+  . assumption
+  . split
+    . simp_all only [bst_node, mem_node, true_or, or_true, implies_true, true_and, and_self, and_true]
+      rename_i left1 data1 right1 left2 data2 right2 heq left3 data3 right3 heq
+      have BST_right1 := hleft.right.right.right
+      have BST_left2 := hright.right.left
+      have memAppendTrees := appendTrees_root heq
+      refine ⟨?_,⟨?_,?_⟩,?_,?_,?_⟩
+      . intro x h
+        have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
+        have mem_data3 := memAppendTrees data3 (by simp)
+        rcases h with h | h | h
+        . apply lt_trans (hleft.left x h) _
+          cases mem_data3 <;> aesop
+        . cases mem_data3 <;> aesop
+        . aesop
+      . intro x h
+        have mem_subtree := memAppendTrees x (by simp [h])
+        cases mem_subtree <;> aesop
+      . have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
+        aesop
+      . intro x h
+        have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
+        have mem_data3 := memAppendTrees data3 (by simp)
+        rcases h with h | h | h
+        . aesop
+        . cases mem_data3 <;> aesop
+        . have := hright.right.right.left
+          apply lt_trans _ (this x h)
+          cases mem_data3 <;> aesop
+      . intro x h
+        have mem_subtree := memAppendTrees x (by simp [h])
+        cases mem_subtree <;> aesop
+      . have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
+        aesop
+    . aesop (add norm appendTrees, safe bst_appendTrees_of_bsts)
+  -- TODO: this is COMPLETELY identical to the one above, maybe there is a way to better split it?
+  . split
+    . simp_all only [bst_node, mem_node, true_or, or_true, implies_true, true_and, and_self, and_true]
+      rename_i left1 data1 right1 left2 data2 right2 heq left3 data3 right3 heq
+      have BST_right1 := hleft.right.right.right
+      have BST_left2 := hright.right.left
+      have memAppendTrees := appendTrees_root heq
+      refine ⟨?_,⟨?_,?_⟩,?_,?_,?_⟩
+      . intro x h
+        have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
+        have mem_data3 := memAppendTrees data3 (by simp)
+        rcases h with h | h | h
+        . apply lt_trans (hleft.left x h) _
+          cases mem_data3 <;> aesop
+        . cases mem_data3 <;> aesop
+        . aesop
+      . intro x h
+        have mem_subtree := memAppendTrees x (by simp [h])
+        cases mem_subtree <;> aesop
+      . have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
+        aesop
+      . intro x h
+        have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
+        have mem_data3 := memAppendTrees data3 (by simp)
+        rcases h with h | h | h
+        . aesop
+        . cases mem_data3 <;> aesop
+        . have := hright.right.right.left
+          apply lt_trans _ (this x h)
+          cases mem_data3 <;> aesop
+      . intro x h
+        have mem_subtree := memAppendTrees x (by simp [h])
+        cases mem_subtree <;> aesop
+      . have ih := bst_appendTrees_of_bsts BST_right1 BST_left2 (by aesop)
+        aesop
+    . aesop (add norm appendTrees, safe bst_appendTrees_of_bsts)
+  . aesop (add norm appendTrees, safe bst_appendTrees_of_bsts)
+  . aesop (add norm appendTrees, safe bst_appendTrees_of_bsts)
+termination_by (left, right)
 
 theorem bst_del_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.del x) := by
   unfold del
   split
   . assumption
-  . cases h
-    split
+  . split
     . split <;> aesop (add safe apply bst_del_of_bst)
-    . aesop
+    . have := bst_ordered h
+      aesop
     . split <;> aesop (add safe apply bst_del_of_bst)
+termination_by t
 
 theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := by
   unfold erase
