@@ -1,5 +1,4 @@
 import Filrb.Internal.Raw
-import Filrb.Internal.Invariants
 
 /-!
 This module defines the notion of membership in a raw red black tree and proves that `Raw.contains`
@@ -9,6 +8,10 @@ corresponds to this notion.
 namespace Filrb
 namespace Internal
 namespace Raw
+
+@[simp]
+theorem Mem_iff_mem {x : α} {t : Raw α} : Mem x t ↔ x ∈ t := by
+  rfl
 
 theorem mem_of_mem_left (x : α) (left : Raw α) (data : α) (color : Color) (right : Raw α) :
     x ∈ left → x ∈ (Raw.node left data color right) := by
@@ -28,11 +31,48 @@ theorem mem_of_eq (x : α) (left : Raw α) (data : α) (color : Color) (right : 
   rw [h]
   apply Mem.here
 
+theorem mem_color_independent (h : x ∈ (Raw.node l d c r)) : x ∈ (Raw.node l d c' r) := by
+  rcases h with _ | h | h
+  . simp [mem_of_eq]
+  . apply mem_of_mem_left
+    apply h
+  . apply mem_of_mem_right
+    apply h
+
+@[simp]
+theorem mem_iff_paintColor_mem (x : α) (c : Color) (t : Raw α) : x ∈ t.paintColor c  ↔ x ∈ t:= by
+  rcases t
+  . simp [paintColor]
+  . rw [paintColor]
+    constructor <;> apply mem_color_independent
+
 variable [Ord α]
 
 @[simp]
 theorem nil_contains {x : α} : Raw.nil.contains x = false := by
   simp [contains]
+
+omit [Ord α] in
+@[simp]
+theorem mem_nil {x : α} : ¬x ∈ Raw.nil := by
+  intro h
+  cases h
+
+omit [Ord α] in
+@[simp]
+theorem mem_node {left right : Raw α} {color : Color} {data x : α} :
+    x ∈ (Raw.node left data color right) ↔ (x ∈ left ∨ x = data ∨ x ∈ right) := by
+  constructor
+  · intro h
+    cases h <;> simp_all
+  · intro h
+    rcases h with h1 | h2 | h3
+    · apply mem_of_mem_left
+      assumption
+    · apply mem_of_eq
+      assumption
+    · apply mem_of_mem_right
+      assumption
 
 variable [Preorder α] [LawfulOrd α]
 

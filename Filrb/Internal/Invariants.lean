@@ -1,4 +1,5 @@
 import Filrb.Internal.Raw
+import Filrb.Internal.Mem
 import Mathlib.Data.Nat.Log
 
 /-!
@@ -11,17 +12,18 @@ namespace Internal
 
 namespace Raw
 
+@[simp]
+theorem size_nil : (.nil : Raw α).size = 0 := by
+  rfl
+
+@[simp]
+theorem size_node : (.node l d c r : Raw α).size = l.size + r.size + 1 := by
+  rfl
+
 variable [Preorder α] [Ord α] [LawfulOrd α]
 
-/--
-A tree is a binary search tree.
--/
-inductive BST : Raw α → Prop where
-  | nil : BST .nil
-  | node (hleft1 : ∀ x ∈ left, x < data) (hleft2 : BST left)
-         (hright1 : ∀ x ∈ right, data < x) (hright2 : BST right) : BST (.node left data color right)
-
 omit [Ord α] [LawfulOrd α] in
+@[simp]
 theorem bst_nil : BST (.nil : Raw α) := BST.nil
 
 
@@ -157,7 +159,205 @@ theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) :
   apply bst_paintColor_of_bst
   apply bst_ins_bst; assumption
 
-theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := sorry
+omit [Ord α] [LawfulOrd α] in
+@[simp]
+theorem bst_node {l r : Raw α} :
+    BST (.node l d c r) ↔ (∀ x ∈ l, x < d) ∧ BST l ∧ (∀ x ∈ r, d < x) ∧ BST r := by
+  constructor
+  · intro h
+    cases h
+    simp_all
+  · rintro ⟨_, _, _, _⟩
+    apply BST.node <;> assumption
+
+theorem bst_baliL_of_bsts(x : α) (left right : Raw α)
+    (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
+    (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baliL x left right) := by
+  sorry
+
+theorem bst_baliR_of_bsts(x : α) (left right : Raw α)
+    (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
+    (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baliR x left right) := by
+  sorry
+
+omit [Preorder α] [LawfulOrd α] in
+@[simp]
+theorem erase_nil : erase x (.nil : Raw α) = .nil := by
+  simp [erase, paintColor, del]
+
+@[aesop safe apply]
+theorem bst_baldL_of_bsts (x : α) (left right : Raw α)
+    (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
+    (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baldL x left right) := by
+  unfold baldL
+  split
+  . apply BST.node
+    . intro x hmem
+      apply hleft1
+      apply mem_color_independent
+      assumption
+    . apply bst_color_independent
+      assumption
+    . intro x hmem
+      apply hright1
+      assumption
+    . assumption
+  . apply bst_baliR_of_bsts
+    . sorry
+    . assumption
+    . sorry
+    . apply bst_color_independent
+      assumption
+  . cases hright2
+    next hl1 hl2 _ hr2 =>
+      apply BST.node
+      . intro x hmem
+        cases hl1
+        next _ hll2 _ hlr2 =>
+          rcases hmem with _ | h | h
+          . simp_all -- case doesnt happen
+          . simp at h
+            have x_lt_x3:= hleft1 x h
+            have h1 := hright1
+            sorry
+          . simp_all -- case doesnt happen
+      . apply BST.node hleft1 hleft2
+        . intro x hmem
+          apply hright1
+          simp [hmem]
+        . cases hl1
+          assumption
+      . intro x hmem
+        sorry
+      . apply bst_baliR_of_bsts
+        . sorry
+        . cases hl1
+          assumption
+        . sorry
+        . apply bst_paintColor_of_bst
+          assumption
+  . apply BST.node hleft1 hleft2 hright1 hright2
+
+@[aesop safe apply]
+theorem bst_baldR_of_bsts (x : α) (left right : Raw α)
+    (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
+    (hright1 : ∀ y ∈ right, x < y) (hright2 : BST right) : BST (baldR x left right) := by
+  unfold baldR
+  split
+  . apply BST.node
+    . intro x hmem
+      apply hleft1
+      assumption
+    . assumption
+    . intro x hmem
+      apply hright1
+      apply mem_color_independent
+      assumption
+    . apply bst_color_independent
+      assumption
+  . apply bst_baliL_of_bsts
+    . sorry
+    . apply bst_color_independent
+      assumption
+    . assumption
+    . sorry
+  . sorry
+  . apply BST.node hleft1 hleft2 hright1 hright2
+
+@[aesop safe apply]
+theorem bst_appendTrees_of_bsts {t₁ t₂ : Raw α} (h₁ : BST t₁) (h₂ : BST t₂): BST (appendTrees t₁ t₂) := by
+  unfold appendTrees
+  split
+  . assumption
+  . assumption
+  . split
+    . next h =>
+      apply BST.node
+      . sorry
+      . sorry
+      . sorry
+      . sorry
+    . next h => sorry
+  . sorry
+  . sorry
+  . sorry
+
+@[aesop safe forward]
+theorem mem_of_mem_baldL {d : α} (h : x ∈ baldL d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
+  unfold baldL at h
+  split at h
+  . aesop
+  . have := mem_of_mem_baliR h
+    aesop
+  . rcases h with _ | h | h
+    . simp
+    . aesop
+    . have := mem_of_mem_baliR h
+      aesop
+  . aesop
+
+@[aesop safe forward]
+theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
+  unfold baldR at h
+  split at h
+  . aesop
+  . have := mem_of_mem_baliL h
+    aesop
+  . rcases h with _ | h | h
+    . simp
+    . have := mem_of_mem_baliL h
+      aesop
+    . aesop
+  . aesop
+
+@[aesop safe forward]
+theorem mem_of_mem_appendTrees (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂  := by
+  unfold appendTrees at h
+  split at h
+  . simp [h]
+  . simp [h]
+  . split at h
+    . next heq =>
+        rcases h with _ | h | h
+        . sorry
+        . simp at h
+          rcases h with h | h | h
+          . simp_all
+          . simp_all
+          . sorry
+        . sorry
+    . sorry
+  . split at h
+    . sorry
+    . sorry
+  . sorry
+  . sorry
+
+@[aesop safe forward]
+theorem mem_of_mem_del {d : α} (h : x ∈ del d t) : x ∈ t := by
+  unfold del at h
+  split at h
+  . assumption
+  . split at h
+    . split at h <;> aesop (add safe forward mem_of_mem_del)
+    . aesop
+    . split at h <;> aesop (add safe forward mem_of_mem_del)
+
+theorem bst_del_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.del x) := by
+  unfold del
+  split
+  . assumption
+  . cases h
+    split
+    . split <;> aesop (add safe apply bst_del_of_bst)
+    . aesop
+    . split <;> aesop (add safe apply bst_del_of_bst)
+
+theorem bst_erase_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.erase x) := by
+  unfold erase
+  apply bst_paintColor_of_bst
+  apply bst_del_of_bst
+  exact h
 
 /--
 The child invariant for red black trees: Red nodes must have black children.
@@ -168,7 +368,10 @@ inductive ChildInv : Raw α → Prop where
   | red (hleft1 : ChildInv left) (hleft2 : left.rootColor = .black) (hright1 : ChildInv right)
         (hright2 : right.rootColor = .black) : ChildInv (.node left data .red right)
 
+attribute [pp_nodot] ChildInv
+
 omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
 theorem childInv_nil : ChildInv (.nil : Raw α) := ChildInv.nil
 
 theorem childInv_insert_of_bst (x : α) (t : Raw α) (h : ChildInv t) : ChildInv (t.insert x) := sorry
@@ -195,7 +398,10 @@ inductive HeightInv : Raw α → Prop where
   | node (hleft : HeightInv left) (hright : HeightInv right)
          (h : left.blackHeightLeft = right.blackHeightLeft) : HeightInv (.node left data color right)
 
+attribute [pp_nodot] HeightInv
+
 omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
 theorem heightInv_nil : HeightInv (.nil : Raw α) := HeightInv.nil
 
 theorem heightInv_insert_of_bst (x : α) (t : Raw α) (h : HeightInv t) : HeightInv (t.insert x) := sorry

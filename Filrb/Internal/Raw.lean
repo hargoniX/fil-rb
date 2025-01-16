@@ -31,6 +31,7 @@ Colors of red black tree nodes.
 inductive Color where
   | black
   | red
+  deriving DecidableEq
 
 /--
 The basic red black tree data structure without any invariant etc. attached.
@@ -44,6 +45,8 @@ inductive Raw (α : Type u) where
   A node with left and right successor, its color and a piece of data
   -/
   | node (left : Raw α) (data : α) (color : Color) (right : Raw α) : Raw α
+
+attribute [pp_nodot] Raw.node
 
 namespace Raw
 
@@ -73,6 +76,12 @@ def paintColor (c : Color) (t : Raw α) : Raw α :=
   match t with
   | .nil => .nil
   | .node l d _ r => .node l d c r
+
+@[inline]
+def isBlack (t : Raw α) : Bool :=
+  match t with
+  | .node _ _ .black _ => true
+  | _             => false
 
 -- Balanced insert into the left child, fixing red on red sequences on the way.
 @[inline]
@@ -131,8 +140,8 @@ def baldR (d : α) : Raw α → Raw α → Raw α
       .node left d .red (.node t₁ data .black t₂)
   | .node t₁ data .black t₂, right =>
       baliL d (.node t₁ data .red t₂) right
-  | .node  t₁ data₁ .red (.node t₂ data₂ .black t₃), right =>
-      .node (baliL data₁ (paintColor .red t₁) t₂) data₁ .red (.node t₃ data₂ .black right)
+  | .node t₁ data₁ .red (.node t₂ data₂ .black t₃), right =>
+      .node (baliL data₁ (paintColor .red t₁) t₂) data₂ .red (.node t₃ d .black right)
   | left, right => .node left d .red right
 
 -- Appends one tree to another while painting the correct color
@@ -157,14 +166,16 @@ def del (d : α) : Raw α → Raw α
   | .node left data _ right =>
     match compare d data with
     | .lt =>
-      match left with
-      | .node _ _ .black _ => baldL data (del d left) right
-      | _ => .node (del d left) data .red right
+      if left.isBlack then
+        baldL data (del d left) right
+      else
+        .node (del d left) data .red right
     | .eq => appendTrees left right
     | .gt =>
-      match right with
-      | .node _ _ .black _ => baldR data left (del d right)
-      | _ => .node left data .red (del d right)
+      if right.isBlack then
+        baldR data left (del d right)
+      else
+        .node left data .red (del d right)
 
 /--
 Erase `d` from `t`, if `d` is not in `t` leave it untouched.
@@ -236,6 +247,16 @@ inductive Mem (x : α) : Raw α → Prop where
 
 instance : Membership α (Raw α) where
   mem t x := Mem x t
+
+/--
+A tree is a binary search tree.
+-/
+inductive BST : Raw α → Prop where
+  | nil : BST .nil
+  | node (hleft1 : ∀ x ∈ left, x < data) (hleft2 : BST left)
+         (hright1 : ∀ x ∈ right, data < x) (hright2 : BST right) : BST (.node left data color right)
+
+attribute [pp_nodot] BST
 
 /--
 Returns the amount of elements in `t`.

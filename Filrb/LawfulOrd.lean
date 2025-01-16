@@ -53,6 +53,10 @@ theorem compare_eq_eq {x y : α} : compare x y = .eq ↔ x = y := by
     exact ne_of_gt this
 
 @[simp]
+theorem compare_self {x : α} : compare x x = .eq := by
+  simp
+
+@[simp]
 theorem compare_eq_gt {x y : α} : compare x y = .gt ↔ y < x := by
   have := LawfulOrd.compares x y
   match h : compare x y with
