@@ -96,9 +96,13 @@ theorem bst_baliL_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x �
 /- the balance-right operation preserves the bst property-/
 lemma bst_baliR_bst (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < d) (Hr : ∀ x ∈ tr, d < x) : BST (baliR d tl tr) := by sorry
 
-lemma x_lt_data_ins (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < data) (Hr : ∀ x ∈ tr, data < x) : x ∈ ins d left → x < data := sorry
+theorem mem_of_mem_baliL {d : α} (h : x ∈ baliL d left right) : x ∈ left ∨ x ∈ right ∨ x = d := by sorry
 
-lemma x_gt_data_ins (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < data) (Hr : ∀ x ∈ tr, data < x) : x ∈ ins d right → data < x := sorry
+theorem mem_of_mem_baliR {d : α} (h : x ∈ baliR d left right) : x ∈ left ∨ x ∈ right ∨ x = d := by sorry
+
+lemma x_lt_data_ins (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < data) (Hr : ∀ x ∈ tr, data < x) : x ∈ ins d left → x < data := by sorry
+
+lemma x_gt_data_ins (tl tr : Raw α) (hl : BST tl) (hr : BST tr) (Hl : ∀ x ∈ tl, x < data) (Hr : ∀ x ∈ tr, data < x) : x ∈ ins d right → data < x := by sorry
 /- the ins operation preserves the bst property-/
 theorem bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
   unfold ins
