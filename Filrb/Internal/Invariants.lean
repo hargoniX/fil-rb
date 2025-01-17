@@ -60,89 +60,93 @@ theorem bst_paintColor_of_bst (c : Color) (t : Raw α) (h : BST t) : BST (t.pain
   . apply bst_color_independent h
 
 
+omit [Ord α] [LawfulOrd α] in
 /- the balance-left operation preserves the bst property-/
 @[aesop safe apply]
-theorem bst_baliL_of_bsts (tl tr : Raw α) (Hl : ∀ x ∈ tl, x < d) (hl : BST tl) (Hr : ∀ x ∈ tr, d < x) (hr : BST tr)  : BST (baliL d tl tr) := by
-      unfold baliL
-      split
-      · next hx1 hx ht1 hd1 ht2 hd2 ht3 => cases hl
-                                           next hleft2 hleft1 hright2 hright1 =>
-                                            apply BST.node
-                                            · aesop
-                                            · aesop
-                                            · intro x hx
-                                              cases hx
-                                              · aesop
-                                              · aesop
-                                              · next hright3 => have h : x ∈ tr := by apply hright3
-                                                                apply lt_trans _ (Hr x h)
-                                                                aesop
-                                            · aesop
-      · next x1 x2 t1 d1 t2 d2 t3 hx => cases hl
-                                        next hleft2 hleft1 hright2 hright1 =>
-                                          apply BST.node
-                                          · intro x h
-                                            cases h
-                                            · aesop
-                                            · next hleft => have h : x ∈ t1 := by apply hleft
-                                                            apply lt_trans (hleft1 x h) (_)
-                                                            aesop
-                                            · aesop
-                                          · aesop
-                                          · intro x h
-                                            cases h
-                                            · aesop
-                                            · aesop
-                                            · next hright => have hhx : x ∈ tr := by apply hright
-                                                             apply lt_trans _ (Hr x hhx)
-                                                             aesop
-                                          · aesop
-      · aesop
-
-/- the balance-right operation preserves the bst property-/
-@[aesop safe apply]
-theorem bst_baliR_of_bst (tl tr : Raw α) (Hl : ∀ x ∈ tl, x < d) (hl : BST tl) (Hr : ∀ x ∈ tr, d < x) (hr : BST tr) : BST (baliR d tl tr) := by
-  unfold baliR
+theorem bst_baliL_of_bsts (tl tr : Raw α) (Hl : ∀ x ∈ tl, x < d) (hl : BST tl)
+    (Hr : ∀ x ∈ tr, d < x) (hr : BST tr) :
+    BST (baliL d tl tr) := by
+  unfold baliL
   split
-  · next t1 t2 t3 d1 t4 d5 t6 h => cases hr
-                                   next hleft2 hleft1 hright2 hright1 =>
-                                    apply BST.node
-                                    · intro x hx
-                                      cases hx
-                                      · aesop
-                                      · next hleft => have h1 : x ∈ tl := by apply hleft
-                                                      apply lt_trans (Hl x h1) (_)
-                                                      aesop
-                                      · aesop
-                                    · aesop
-                                    · aesop
-                                    · aesop
-  · next t1 t2 t3 d1 t4 d5 t6 h => cases hr
-                                   next hleft2 hleft1 hright2 hright1 =>
-                                   apply BST.node
-                                   · intro x hx
-                                     cases hx
-                                     · aesop
-                                     · next hleft => have h1 : x ∈ tl := by apply hleft
-                                                     apply lt_trans (Hl x h1) (_)
-                                                     aesop
-                                     · aesop
-                                   · aesop
-                                   · intro x hx
-                                     cases hx
-                                     · aesop
-                                     · aesop
-                                     · next hright => have h1 : x ∈ t6 := by apply hright
-                                                      apply lt_trans (_) (hright1 x h1)
-                                                      aesop
-                                   · aesop
+  · apply BST.node
+    · aesop
+    · aesop
+    · intro x hx
+      rw [mem_node] at hx
+      rcases hx with hx | hx | hx
+      · aesop
+      · aesop
+      · apply lt_trans _ (Hr x hx)
+        aesop
+    · aesop
+  · rw [bst_node] at hl
+    rcases hl with ⟨hleft2, hleft1, hright2, hright1⟩
+    apply BST.node
+    · intro x h
+      rw [mem_node] at h
+      rcases h with h | h | h
+      · apply lt_trans (hleft2 x h) (_)
+        aesop
+      · aesop
+      · aesop
+    · aesop
+    · intro x h
+      rw [mem_node] at h
+      rcases h with h | h | h
+      · aesop
+      · aesop
+      · apply lt_trans _ (Hr x h)
+        aesop
+    · aesop
   · aesop
 
+omit [Ord α] [LawfulOrd α] in
+/- the balance-right operation preserves the bst property-/
+@[aesop safe apply]
+theorem bst_baliR_of_bst (tl tr : Raw α) (Hl : ∀ x ∈ tl, x < d) (hl : BST tl) (Hr : ∀ x ∈ tr, d < x)
+    (hr : BST tr) :
+    BST (baliR d tl tr) := by
+  unfold baliR
+  split
+  · apply BST.node
+    · intro x hx
+      rw [mem_node] at hx
+      rcases hx with hx | hx | hx
+      · apply lt_trans (Hl x hx) (_)
+        aesop
+      · aesop
+      · aesop
+    · aesop
+    · aesop
+    · aesop
+  · rw [bst_node] at hr
+    rcases hr with ⟨hleft1, hleft2, hright1, hright2⟩
+    apply BST.node
+    · intro x hx
+      rw [mem_node] at hx
+      rcases hx with hx | hx | hx
+      · apply lt_trans (Hl x hx) (_)
+        aesop
+      · aesop
+      · aesop
+    · aesop
+    · intro x hx
+      rw [mem_node] at hx
+      rcases hx with hx | hx | hx
+      · aesop
+      · aesop
+      · apply lt_trans (_) (hright1 x hx)
+        aesop
+    · aesop
+  · aesop
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[aesop safe forward]
 theorem mem_of_mem_baliL {d : α} (h : x ∈ baliL d left right) : x ∈ left ∨ x ∈ right ∨ x = d := by
   unfold baliL at h
   split at h <;> aesop
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[aesop safe forward]
 theorem mem_of_mem_baliR {d : α} (h : x ∈ baliR d left right) : x ∈ left ∨ x ∈ right ∨ x = d := by
   unfold baliR at h
@@ -152,6 +156,8 @@ theorem mem_of_mem_baliR {d : α} (h : x ∈ baliR d left right) : x ∈ left �
 theorem mem_of_mem_ins (t : Raw α) (x d : α) (h1 : BST t) (h2 : x ∈ ins d t) : x = d ∨ x ∈ t := by
   unfold ins at h2
   split at h2 <;> aesop (add safe forward mem_of_mem_ins)
+termination_by t
+
 /- the ins operation preserves the bst property-/
 theorem bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
   unfold ins
@@ -159,18 +165,21 @@ theorem bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
   · simp
   · split <;> aesop (add safe apply bst_ins_bst)
   · split <;> aesop (add safe apply bst_ins_bst)
+termination_by t
 
 /- the insertion operation preserves the bst property-/
 theorem bst_insert_of_bst (x : α) (t : Raw α) (h : BST t) : BST (t.insert x) := by
   unfold insert
   apply bst_paintColor_of_bst
-  apply bst_ins_bst; assumption
+  apply bst_ins_bst
+  assumption
 
 omit [Preorder α] [LawfulOrd α] in
 @[simp]
 theorem erase_nil : erase x (.nil : Raw α) = .nil := by
   simp [erase, paintColor, del]
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[aesop safe forward]
 theorem mem_of_mem_baldL {d : α} (h : x ∈ baldL d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
   unfold baldL at h
@@ -185,6 +194,7 @@ theorem mem_of_mem_baldL {d : α} (h : x ∈ baldL d t₁ t₂) : x ∈ t₁ ∨
       aesop
   . aesop
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[aesop safe forward]
 theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
   unfold baldR at h
@@ -199,6 +209,7 @@ theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨
     . aesop
   . aesop
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[aesop safe forward]
 theorem mem_of_mem_appendTrees {t₁ t₂ : Raw α} (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂  := by
   induction t₁, t₂ using appendTrees.induct <;> aesop (add safe h, norm appendTrees)
@@ -214,6 +225,7 @@ theorem mem_of_mem_del {d : α} (h : x ∈ del d t) : x ∈ t := by
     . split at h <;> aesop (add safe forward mem_of_mem_del)
 termination_by t
 
+omit [Ord α] [LawfulOrd α] in
 @[aesop safe apply]
 theorem bst_baldL_of_bsts (x : α) (left right : Raw α)
     (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
@@ -244,6 +256,7 @@ theorem bst_baldL_of_bsts (x : α) (left right : Raw α)
       . aesop
   . apply BST.node hleft1 hleft2 hright1 hright2
 
+omit [Ord α] [LawfulOrd α] in
 @[aesop safe apply]
 theorem bst_baldR_of_bsts (x : α) (left right : Raw α)
     (hleft1 : ∀ y ∈ left, y < x) (hleft2 : BST left)
@@ -274,6 +287,7 @@ theorem bst_baldR_of_bsts (x : α) (left right : Raw α)
       . aesop
   . apply BST.node hleft1 hleft2 hright1 hright2
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem appendTrees_root {left right : Raw α} (heq : appendTrees left right = .node l d c r) :
     ∀ x, x ∈ l ∨ x = d ∨ x ∈ r → x ∈ left ∨ x ∈ right := by
   intro x
@@ -283,6 +297,7 @@ theorem appendTrees_root {left right : Raw α} (heq : appendTrees left right = .
   apply mem_of_mem_appendTrees
 
 -- aesop really seems to struggle here performance wise
+omit [Ord α] [LawfulOrd α] in
 set_option maxHeartbeats 0 in
 @[aesop safe apply]
 theorem bst_appendTrees_of_bsts {left right : Raw α} (hleft : BST left) (hright : BST right)
