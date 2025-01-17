@@ -140,24 +140,6 @@ theorem bst_baliR_of_bst (tl tr : Raw α) (Hl : ∀ x ∈ tl, x < d) (hl : BST t
     · aesop
   · aesop
 
-omit [Preorder α] [Ord α] [LawfulOrd α] in
-@[aesop safe forward]
-theorem mem_of_mem_baliL {d : α} (h : x ∈ baliL d left right) : x ∈ left ∨ x ∈ right ∨ x = d := by
-  unfold baliL at h
-  split at h <;> aesop
-
-omit [Preorder α] [Ord α] [LawfulOrd α] in
-@[aesop safe forward]
-theorem mem_of_mem_baliR {d : α} (h : x ∈ baliR d left right) : x ∈ left ∨ x ∈ right ∨ x = d := by
-  unfold baliR at h
-  split at h <;> aesop
-
-@[aesop safe forward]
-theorem mem_of_mem_ins (t : Raw α) (x d : α) (h1 : BST t) (h2 : x ∈ ins d t) : x = d ∨ x ∈ t := by
-  unfold ins at h2
-  split at h2 <;> aesop (add safe forward mem_of_mem_ins)
-termination_by t
-
 /- the ins operation preserves the bst property-/
 theorem bst_ins_bst (d : α) (t : Raw α) (h : BST t) : BST (ins d t) := by
   unfold ins
@@ -178,52 +160,6 @@ omit [Preorder α] [LawfulOrd α] in
 @[simp]
 theorem erase_nil : erase x (.nil : Raw α) = .nil := by
   simp [erase, paintColor, del]
-
-omit [Preorder α] [Ord α] [LawfulOrd α] in
-@[aesop safe forward]
-theorem mem_of_mem_baldL {d : α} (h : x ∈ baldL d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
-  unfold baldL at h
-  split at h
-  . aesop
-  . have := mem_of_mem_baliR h
-    aesop
-  . rcases h with _ | h | h
-    . simp
-    . aesop
-    . have := mem_of_mem_baliR h
-      aesop
-  . aesop
-
-omit [Preorder α] [Ord α] [LawfulOrd α] in
-@[aesop safe forward]
-theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂ ∨ x = d := by
-  unfold baldR at h
-  split at h
-  . aesop
-  . have := mem_of_mem_baliL h
-    aesop
-  . rcases h with _ | h | h
-    . simp
-    . have := mem_of_mem_baliL h
-      aesop
-    . aesop
-  . aesop
-
-omit [Preorder α] [Ord α] [LawfulOrd α] in
-@[aesop safe forward]
-theorem mem_of_mem_appendTrees {t₁ t₂ : Raw α} (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂  := by
-  induction t₁, t₂ using appendTrees.induct <;> aesop (add safe h, norm appendTrees)
-
-@[aesop safe forward]
-theorem mem_of_mem_del {d : α} (h : x ∈ del d t) : x ∈ t := by
-  unfold del at h
-  split at h
-  . assumption
-  . split at h
-    . split at h <;> aesop (add safe forward mem_of_mem_del)
-    . aesop
-    . split at h <;> aesop (add safe forward mem_of_mem_del)
-termination_by t
 
 omit [Ord α] [LawfulOrd α] in
 @[aesop safe apply]
