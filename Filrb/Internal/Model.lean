@@ -169,101 +169,154 @@ theorem bst_iff_sorted_inorder {t : Raw α} : t.BST ↔ Sorted t.inorder := by
 namespace Raw
 namespace Model
 
--- TODO: this trivializes baldL, but it is correct, right?
-theorem baliL_inorder_independent {l r : Raw α}
-    (hl : ∀ y ∈ l, y < x) (hr : ∀ y ∈ r, x < y) :
-    (baliL x l r).inorder = l.inorder ++ x :: r.inorder := by
-  sorry
-
-theorem baliR_inorder_independent {l r : Raw α}
-    (hl : ∀ y ∈ l, y < x) (hr : ∀ y ∈ r, x < y) :
-    (baliR x l r).inorder = l.inorder ++ x :: r.inorder := by
-  sorry
-
-theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
-    (t.insert x).inorder = sortedInsert t.inorder x := sorry
-
 omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
 theorem inorder_paintColor_independent (t : Raw α) :
     (t.paintColor c).inorder = t.inorder := by
   unfold paintColor
   split <;> simp
 
--- TODO: wonky name
-omit [Ord α] [LawfulOrd α] in
-theorem ord_of_sorted {l r : Raw α} :
-    Sorted (node l d c r).inorder → (∀ x ∈ l, ∀ y ∈ r, x < y) := by
-  intro h
-  have tBST := bst_iff_sorted_inorder.mpr h
-  rcases tBST
-  rename_i hl1 hl2 hr1 hr2
-  intro x xmem y ymem
-  apply lt_trans (hl2 x xmem)
-  apply hr2
-  assumption
+theorem baliL_inorder_independent {l r : Raw α}
+    (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
+    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
+    : (baliL x l r).inorder = l.inorder ++ x :: r.inorder := by
+  sorry
 
-theorem erase_inorder (x : α) (l r : Raw α) (h : x ∉ l.inorder) :
-    (l.inorder ++ x :: r.inorder).erase x = l.inorder ++ r.inorder := by
-  rw [List.erase_append_right]
-  . simp
-  . assumption
+theorem baliR_inorder_independent {l r : Raw α}
+    (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
+    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
+    : (baliR x l r).inorder = l.inorder ++ x :: r.inorder := by
+  sorry
+
+theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
+    (t.insert x).inorder = sortedInsert t.inorder x := sorry
 
 theorem baldL_inorder_independent {l r : Raw α}
-    (hl : ∀ y ∈ l, y < x) (hr : ∀ y ∈ r, x < y) :
-    (baldL x l r).inorder = l.inorder ++ x :: r.inorder := by
+    (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
+    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
+    : (baldL x l r).inorder = l.inorder ++ x :: r.inorder := by
   unfold baldL
   split
   . aesop
-  . have := baliR_inorder_independent hl hr
-    sorry
-  . simp_all
-    sorry
+  . aesop (add norm baliR_inorder_independent)
+  . simp only [inorder_node]
+    rw [baliR_inorder_independent] <;> aesop
   . aesop
 
-theorem baldR_inorder_independent {l r : Raw α} (hl : ∀ y ∈ l, y < x)
-    (hr : ∀ y ∈ r, x < y) : (baldR x l r).inorder = l.inorder ++ x :: r.inorder := by
-  sorry
+theorem baldR_inorder_independent {l r : Raw α}
+    (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
+    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
+    : (baldR x l r).inorder = l.inorder ++ x :: r.inorder := by
+  unfold baldR
+  split
+  . aesop
+  . aesop (add norm baliL_inorder_independent)
+  . rw [inorder_node]
+    rw [baliL_inorder_independent] <;> aesop
+  . aesop
 
-theorem appendTrees_inorder_independent {l r : Raw α} (h : ∀ x ∈ l, ∀ y ∈ r, x < y) :
+theorem appendTrees_inorder_independent {l r : Raw α}
+    (hl : BST l) (hr : BST r) (h : ∀ x ∈ l, ∀ y ∈ r, x < y) :
     (l.appendTrees r).inorder = l.inorder ++ r.inorder := by
   unfold appendTrees
   . split
     . simp
     . simp
     . split
-      . sorry
-      . sorry
+      . next left1  _ right1 left2 _ right2 _ left3 data3 right3 heq =>
+        rw [bst_node] at hl hr
+        rcases hl with ⟨_,_,_,hlr2⟩
+        rcases hr with ⟨_,hrl2,_,_⟩
+        simp_all only [mem_node, true_or, or_true, inorder_node, List.append_assoc, true_and,
+          List.cons_append, List.nil_append, List.append_cancel_left_eq, List.cons.injEq]
+        have : right1.inorder ++ left2.inorder = left3.inorder ++ data3 :: right3.inorder := by
+          have := appendTrees_inorder_independent hlr2 hrl2 (by aesop)
+          rw [heq] at this
+          simp [← this]
+        rw [← List.append_assoc]
+        simp [this]
+      . rw [bst_node] at hl hr
+        rcases hl with ⟨_,_,_,hlr2⟩
+        rcases hr with ⟨_,hrl2,_,_⟩
+        have := appendTrees_inorder_independent hlr2 hrl2 (by aesop)
+        aesop
     . split
-      . sorry
-      . sorry
-    . simp_all
-      sorry
-    . simp_all
-      sorry
+      . next left1  _ right1 left2 _ right2 _ left3 data3 right3 heq =>
+        rw [bst_node] at hl hr
+        rcases hl with ⟨_,_,_,hlr2⟩
+        rcases hr with ⟨_,hrl2,_,_⟩
+        simp_all only [mem_node, true_or, or_true, inorder_node, List.append_assoc, true_and,
+          List.cons_append, List.nil_append, List.append_cancel_left_eq, List.cons.injEq]
+        have : right1.inorder ++ left2.inorder = left3.inorder ++ data3 :: right3.inorder := by
+          have := appendTrees_inorder_independent hlr2 hrl2 (by aesop)
+          rw [heq] at this
+          simp [← this]
+        rw [← List.append_assoc]
+        simp [this]
+      . next left1 data1 right1 left2 data2 right2 _ _ =>
+        rw [bst_node] at hl hr
+        rcases hl with ⟨hll1,hll2,_,hlr2⟩
+        rcases hr with ⟨_,hrl2,_,_⟩
+        have := appendTrees_inorder_independent hlr2 hrl2 (by aesop)
+        have : BST (node (right1.appendTrees left2) data2 Color.black right2) := by aesop
+        have := baldL_inorder_independent hll1 hll2 (by aesop) this
+        aesop
+    . rw [bst_node] at hr
+      rcases hr with ⟨_,hrl2,_,_⟩
+      have := appendTrees_inorder_independent hl hrl2 (by aesop)
+      aesop
+    . aesop (add norm appendTrees, safe appendTrees_inorder_independent)
 
---    aesop (add norm [appendTrees, erase, del, baldL, baliR, baliL, baldR, List.erase])
-#check mem_of_mem_del
-#check List.mem_of_mem_erase
-#check inorder_node
-#check List.erase_cons_head
-#check List.erase_of_not_mem
-#check List.erase_comm
-#check List.erase_append_left
-#check List.erase_append_right
-#check List.erase_append
-
-theorem del_of_not_mem {t : Raw α} (h : x ∉ t) : (del x t) = t := by
-  unfold del
+theorem erase_lt {l r : Raw α} (h : x < d) (hsort : Sorted (Raw.node l d c r).inorder) :
+    (l.inorder ++ d :: r.inorder).erase x = (l.inorder.erase x ++ d :: r.inorder) := by
+  rw [List.erase_append]
   split
   . simp
-  . split
-    . split
-      . sorry
-      . sorry
-    . sorry
-    . split
-      . sorry
-      . sorry
+  . have h1 : l.inorder.erase x = l.inorder := by aesop
+    have h2 : (d :: r.inorder).erase x = d :: r.inorder := by
+      rw [List.erase_eq_self_iff, List.mem_cons, not_or]
+      constructor
+      . intro h
+        apply (lt_self_iff_false x).mp
+        subst h
+        assumption
+      . intro hrin
+        have := bst_iff_sorted_inorder.mpr hsort
+        rw [bst_node] at this
+        rcases this with ⟨_,_,hr1,_⟩
+        have := (mem_iff_mem x).mpr hrin
+        have := hr1 x this
+        apply (lt_asymm this)
+        assumption
+    rw [h1]
+    rw [h2]
+
+theorem erase_eq {l r : Raw α} (hsort : Sorted (Raw.node l d c r).inorder) :
+    (l.inorder ++ d :: r.inorder).erase d = l.inorder ++ r.inorder := by
+  rw [List.erase_append_right]
+  . aesop
+  . intro hlin
+    have := bst_iff_sorted_inorder.mpr hsort
+    rw [bst_node] at this
+    rcases this with ⟨hl1,_,_,_⟩
+    apply (lt_self_iff_false d).mp
+    apply hl1
+    apply (mem_iff_mem d).mpr
+    assumption
+
+theorem erase_gt {l r : Raw α} (h : d < x) (hsort : Sorted (Raw.node l d c r).inorder) :
+    (l.inorder ++ d :: r.inorder).erase x = (l.inorder ++ d :: (r.inorder.erase x)) := by
+  rw [List.erase_append_right]
+  . rw [List.erase_cons]
+    aesop
+  . intro hlin
+    have := bst_iff_sorted_inorder.mpr hsort
+    rw [bst_node] at this
+    rcases this with ⟨hl1,_,_,_⟩
+    have := (mem_iff_mem x).mpr hlin
+    have := hl1 x this
+    apply (lt_asymm this)
+    assumption
 
 theorem inorder_del_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
     (t.del x).inorder = List.erase t.inorder x := by
@@ -271,73 +324,51 @@ theorem inorder_del_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inorder
   split
   . simp
   . split
-    . split
-      . have hord := ord_of_sorted h
-        have tBST := bst_iff_sorted_inorder.mpr h
-        rcases tBST
-        rename_i l d _ r _ heq _ hl1 hl2 hr1 hr2
-        have := baldL_inorder_independent hl2 hr2
-        if h: x ∈ l then
-          simp
-          rw [List.erase_append_left]
-          . have : ∀ y ∈ (del x l), y < d := by aesop
-            have := baldL_inorder_independent this hr2
-            have lSorted := bst_iff_sorted_inorder.mp hl1
-            have := inorder_del_eq_erase_inorder x lSorted
-            aesop
-          . apply (mem_iff_mem x).mp
-            assumption
-        else
-          have : x ∉ (l.inorder ++ d :: r.inorder) := by
-            intro lmem
-            simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_lt, List.mem_append, List.mem_cons]
-            cases lmem with
-            | inl h_3 =>
-              have := (mem_iff_mem x).mpr h_3
-              simp_all
-            | inr h_4 =>
-              cases h_4 with
-              | inl h_3 =>
-                subst h_3
-                simp_all only [lt_self_iff_false]
-              | inr h_5 =>
-                have := (mem_iff_mem x).mpr h_5
-                have := hr2 x this
-                -- TODO: this really should be linarith'able?
-                -- after fix, maybe aesop is able to do the thing?
-                apply (lt_asymm this)
-                assumption
-          simp
-          rw [List.erase_of_not_mem this]
-          rw [del_of_not_mem h]
+    . split <;>
+      . next left data _ right _ heq _ =>
+        have := bst_iff_sorted_inorder.mpr h
+        rw [bst_node] at this
+        rcases this with ⟨_,hl2,hr1,hr2⟩
+        have hdel1 : ∀ y ∈ (del x left), y < data := by aesop
+        have hdel2 : BST (del x left) := bst_del_of_bst x left hl2
+        have := baldL_inorder_independent hdel1 hdel2 hr1 hr2
+        simp only [this, inorder_node, List.append_assoc, List.singleton_append]
+        rw [LawfulOrd.compare_eq_lt] at heq
+        have := erase_lt heq h
+        simp only [this, List.append_cancel_right_eq]
+        apply inorder_del_eq_erase_inorder
+        apply bst_iff_sorted_inorder.mp
+        assumption
+    . next left data _ right _ heq =>
+        have := bst_iff_sorted_inorder.mpr h
+        rw [bst_node] at this
+        rcases this with ⟨hl1,hl2,hr1,hr2⟩
+        have hord : ∀ x ∈ left, ∀ y ∈ right, x < y := by
+          intro x xmem y ymem
+          apply lt_trans (hl1 x xmem)
+          apply hr1
           assumption
-      . next t left data c right ord heq hL =>
-        have : Sorted (left).inorder := sorry
-        have tBST := bst_iff_sorted_inorder.mpr h
-        rcases tBST
-        rename_i hl1 hl2 hr1 hr2
-        have lBST := bst_iff_sorted_inorder.mp hl1
-        have rBST := bst_iff_sorted_inorder.mp hr1
-        have := inorder_del_eq_erase_inorder x lBST
-        have := inorder_del_eq_erase_inorder x rBST
-        sorry
-    . next left data c right ord heq =>
-        have hord := ord_of_sorted h
-        have := appendTrees_inorder_independent hord
+        have := appendTrees_inorder_independent hl2 hr2 hord
         rw [this]
-        have : data ∉ left.inorder := by
-          have tBST := bst_iff_sorted_inorder.mpr h
-          rcases tBST
-          rename_i hl1 hl2 _ _
-          intro h
-          have := (mem_iff_mem data).mpr h
-          have := hl2 data this
-          exact (lt_self_iff_false data).mp this
-        have := erase_inorder data left right this
-        aesop
-    . split
-      . sorry
-      . sorry
+        rw [LawfulOrd.compare_eq_eq] at heq
+        subst heq
+        have := erase_eq h
+        simp [this]
+    . split <;>
+      . next data _ right _ heq _ =>
+        have := bst_iff_sorted_inorder.mpr h
+        rw [bst_node] at this
+        rcases this with ⟨hl1,hl2,_,hr2⟩
+        have hdel1 : ∀ y ∈ (del x right), data < y := by aesop
+        have hdel2 : BST (del x right) := bst_del_of_bst x right hr2
+        have := baldR_inorder_independent hl1 hl2 hdel1 hdel2
+        simp only [this, inorder_node, List.append_assoc, List.singleton_append]
+        rw [LawfulOrd.compare_eq_gt] at heq
+        have := erase_gt heq h
+        simp only [this, List.append_cancel_left_eq, List.cons.injEq, true_and]
+        apply inorder_del_eq_erase_inorder
+        apply bst_iff_sorted_inorder.mp
+        assumption
 
 theorem inorder_erase_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
     (t.erase x).inorder = sortedErase t.inorder x := by
