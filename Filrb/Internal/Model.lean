@@ -178,14 +178,14 @@ theorem inorder_paintColor_independent (t : Raw α) :
 
 theorem baliL_inorder_independent {l r : Raw α}
     (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
-    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
-    : (baliL x l r).inorder = l.inorder ++ x :: r.inorder := by
+    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r) :
+    (baliL x l r).inorder = l.inorder ++ x :: r.inorder := by
   sorry
 
 theorem baliR_inorder_independent {l r : Raw α}
     (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
-    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
-    : (baliR x l r).inorder = l.inorder ++ x :: r.inorder := by
+    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r) :
+    (baliR x l r).inorder = l.inorder ++ x :: r.inorder := by
   sorry
 
 theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
@@ -193,8 +193,8 @@ theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.ino
 
 theorem baldL_inorder_independent {l r : Raw α}
     (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
-    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
-    : (baldL x l r).inorder = l.inorder ++ x :: r.inorder := by
+    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r) :
+    (baldL x l r).inorder = l.inorder ++ x :: r.inorder := by
   unfold baldL
   split
   . aesop
@@ -205,8 +205,8 @@ theorem baldL_inorder_independent {l r : Raw α}
 
 theorem baldR_inorder_independent {l r : Raw α}
     (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
-    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
-    : (baldR x l r).inorder = l.inorder ++ x :: r.inorder := by
+    (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r) :
+    (baldR x l r).inorder = l.inorder ++ x :: r.inorder := by
   unfold baldR
   split
   . aesop
