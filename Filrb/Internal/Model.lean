@@ -273,36 +273,23 @@ theorem erase_lt {l r : Raw α} (h : x < d) (hsort : Sorted (Raw.node l d c r).i
   split
   . simp
   . have h1 : l.inorder.erase x = l.inorder := by aesop
-    have h2 : (d :: r.inorder).erase x = d :: r.inorder := by
-      rw [List.erase_eq_self_iff, List.mem_cons, not_or]
-      constructor
-      . intro h
-        apply (lt_self_iff_false x).mp
-        subst h
-        assumption
-      . intro hrin
-        have := bst_iff_sorted_inorder.mpr hsort
-        rw [bst_node] at this
-        rcases this with ⟨_,_,hr1,_⟩
-        have := (mem_iff_mem x).mpr hrin
-        have := hr1 x this
-        apply (lt_asymm this)
-        assumption
-    rw [h1]
-    rw [h2]
+    simp only [h1, List.append_cancel_left_eq, List.erase_eq_self_iff, List.mem_cons, not_or]
+    constructor
+    · aesop
+    · intro h2
+      have : d < x := by aesop (add norm Sorted_append_cons_iff)
+      exact lt_asymm h this
 
 theorem erase_eq {l r : Raw α} (hsort : Sorted (Raw.node l d c r).inorder) :
     (l.inorder ++ d :: r.inorder).erase d = l.inorder ++ r.inorder := by
   rw [List.erase_append_right]
   . aesop
   . intro hlin
-    have := bst_iff_sorted_inorder.mpr hsort
-    rw [bst_node] at this
-    rcases this with ⟨hl1,_,_,_⟩
-    apply (lt_self_iff_false d).mp
-    apply hl1
-    apply (mem_iff_mem d).mpr
-    assumption
+    apply lt_irrefl d
+    simp only [inorder_node, List.append_assoc, List.singleton_append,
+      Sorted_append_cons_iff] at hsort
+    rcases hsort with ⟨h1, h2, h3, h4⟩
+    exact h2 _ hlin
 
 theorem erase_gt {l r : Raw α} (h : d < x) (hsort : Sorted (Raw.node l d c r).inorder) :
     (l.inorder ++ d :: r.inorder).erase x = (l.inorder ++ d :: (r.inorder.erase x)) := by
@@ -310,13 +297,10 @@ theorem erase_gt {l r : Raw α} (h : d < x) (hsort : Sorted (Raw.node l d c r).i
   . rw [List.erase_cons]
     aesop
   . intro hlin
-    have := bst_iff_sorted_inorder.mpr hsort
-    rw [bst_node] at this
-    rcases this with ⟨hl1,_,_,_⟩
-    have := (mem_iff_mem x).mpr hlin
-    have := hl1 x this
-    apply (lt_asymm this)
-    assumption
+    simp only [inorder_node, List.append_assoc, List.singleton_append,
+      Sorted_append_cons_iff] at hsort
+    rcases hsort with ⟨h1, h2, h3, h4⟩
+    exact lt_asymm h (h2 _ hlin)
 
 theorem inorder_del_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inorder) :
     (t.del x).inorder = List.erase t.inorder x := by
