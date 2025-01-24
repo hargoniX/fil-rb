@@ -497,13 +497,9 @@ theorem inorder_del_eq_erase_inorder {t : Raw α} (x : α) (h : Sorted t.inorder
         assumption
     . next left data _ right _ heq =>
         have := bst_iff_sorted_inorder.mpr h
+        have hord := bst_ordered this
         rw [bst_node] at this
         rcases this with ⟨hl1,hl2,hr1,hr2⟩
-        have hord : ∀ x ∈ left, ∀ y ∈ right, x < y := by
-          intro x xmem y ymem
-          apply lt_trans (hl1 x xmem)
-          apply hr1
-          assumption
         have := appendTrees_inorder_independent hl2 hr2 hord
         rw [this]
         rw [LawfulOrd.compare_eq_eq] at heq
