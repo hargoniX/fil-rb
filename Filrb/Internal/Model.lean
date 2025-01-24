@@ -208,11 +208,13 @@ lemma baliL_inorder_independent{l r : Raw α} (hl1 : ∀ y ∈ l, y < x) (hl2 : 
     : (baliL x l r).inorder = l.inorder ++ x :: r.inorder := by
     simp[baliL]
     split <;> aesop
+    split <;> aesop
 
 omit [Ord α] [LawfulOrd α] in
 lemma baliR_inorder_independent {l r : Raw α} (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l) (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
     : (baliR x l r).inorder = l.inorder ++ x :: r.inorder := by
     simp[baliR]
+    split <;> aesop
     split <;> aesop
 
 lemma sortedInsert_left (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b) (h : x < data) :
