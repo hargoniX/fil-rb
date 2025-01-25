@@ -13,3 +13,7 @@ name = "Filrb"
 
 [[lean_lib]]
 name = "Test"
+
+
+[[lean_exe]]
+name = "Bench"

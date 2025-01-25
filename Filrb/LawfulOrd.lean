@@ -24,6 +24,10 @@ instance : LawfulOrd Nat := sorry
 instance : LawfulOrd Int := sorry
 instance : LawfulOrd (Fin n) := sorry
 instance : LawfulOrd String := sorry
+instance : LawfulOrd UInt8 := sorry
+instance : LawfulOrd UInt16 := sorry
+instance : LawfulOrd UInt32 := sorry
+instance : LawfulOrd UInt64 := sorry
 
 namespace LawfulOrd
 
