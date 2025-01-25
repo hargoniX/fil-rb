@@ -84,6 +84,33 @@ theorem sortedInsert_append_left {x : α} {xs ys : List α} (h1 : ∀ a ∈ ys, 
       simp [heq]
       rw [ih]
 
+theorem sortedInsert_lt {x : α} {xs : List α} (h1 : ∀ a ∈ xs, x < a) :
+    sortedInsert xs x = x :: xs := by
+  cases xs with
+  | nil => simp
+  | cons x xs =>
+    specialize h1 x (by simp)
+    rw [← LawfulOrd.compare_eq_lt] at h1
+    simp [sortedInsert, h1]
+
+theorem sortedInsert_append_left {x : α} {xs ys : List α} (h1 : ∀ a ∈ ys, x < a) :
+    sortedInsert (xs ++ ys) x = sortedInsert xs x ++ ys := by
+  induction xs with
+  | nil =>
+    simp
+    rw [sortedInsert_lt]
+    assumption
+  | cons x xs ih =>
+    simp
+    rw [sortedInsert]
+    split
+    · aesop
+    · aesop
+    · next heq =>
+      rw [sortedInsert]
+      simp [heq]
+      rw [ih]
+
 theorem length_sortedInsert_of_mem {xs : List α} {k : α} (h1 : Sorted xs) (h2 : k ∈ xs) :
     (sortedInsert xs k).length = xs.length := by
   induction xs with
@@ -224,33 +251,12 @@ lemma baliR_inorder_independent {l r : Raw α} (hl1 : ∀ y ∈ l, y < x) (hl2 :
 
 lemma sortedInsert_left (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b) (h : x < data) :
   sortedInsert xs x ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
-  induction xs with
-  | nil => simp[sortedInsert_cons_lt, h]
-  | cons x xs ih =>
-    simp
-    next e =>
-    specialize ih (by intro h1 h2; apply hl1; simp[h2])
-    match compare e x with
-    | .lt =>
-             have p : e < x := by sorry--refine compare_lt_iff_lt.mp ?_;
-             rw [sortedInsert_cons_lt]
-             rw [sortedInsert_cons_lt]
-             · rfl
-             · assumption
-             · assumption
-    | .eq => have p : x = e := by sorry
-             subst p
-             let H := sortedInsert (x :: xs)
-             rw[sortedInsert_cons_self]
-             rw[sortedInsert_cons_self]
-             rfl
-    | .gt => have p : x < e := by sorry
-             rw [sortedInsert_cons_gt]
-             rw [sortedInsert_cons_gt]
-             · simp ; assumption
-             · assumption
-             · assumption
-
+  rw [sortedInsert_append_left]
+  simp
+  constructor
+  · assumption
+  · intro a ha
+    exact lt_trans h (hr1 a ha)
 
 lemma sortedInsert_middle (x data : α)(xs ys : List α)(hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b)(h : x = data) :
   xs ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
