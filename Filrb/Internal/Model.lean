@@ -217,19 +217,20 @@ lemma baliR_inorder_independent {l r : Raw α} (hl1 : ∀ y ∈ l, y < x) (hl2 :
     split <;> aesop
     split <;> aesop
 
--- lemma sortedInsert_left (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b) (h : x < data) :
---   sortedInsert xs x ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
---   induction xs with
---   | nil => simp[sortedInsert_cons_lt, h]
---   | cons x xs ih =>
---     simp
---     next e =>
---     specialize ih (by intro h1 h2; apply hl1; simp[h2])
---     rw[sortedInsert_cons_lt]
---     simp
---     rw[sortedInsert_cons_lt]
---     have := hl1 x (by aesop)
---     sorry
+lemma sortedInsert_left1 (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b) (h : x < data) :
+  sortedInsert xs x ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
+  induction xs with
+  | nil => simp[sortedInsert_cons_lt, h]
+  | cons x xs ih =>
+    simp
+    next e =>
+    specialize ih (by intro h1 h2; apply hl1; simp[h2])
+    rw [sortedInsert_cons_lt]
+    rw[sortedInsert_cons_lt]
+    · rfl
+    · sorry
+    · sorry
+
 
 lemma sortedInsert_left (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b) (h : x < data) :
   sortedInsert xs x ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
@@ -239,18 +240,6 @@ lemma sortedInsert_left (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a <
   · assumption
   · intro a ha
     exact lt_trans h (hr1 a ha)
-
--- lemma sortedInsert_middle (x data : α)(xs ys : List α)(hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b)(h : x = data) :
---   xs ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
---   induction xs with
---   | nil => simp[sortedInsert_cons_self, h]
---   | cons x xs ih  =>
---     next e =>
---     simp
---     specialize ih (by intro h1 h2; apply hl1; simp[h2])
---     --rw[sortedInsert_cons_self]
---     sorry
-
 
 lemma sortedInsert_middle (x data : α)(xs ys : List α)(hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b)(h : x = data) :
   xs ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
