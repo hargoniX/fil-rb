@@ -11,6 +11,7 @@ MIN_POW = 0
 MAX_POW = 6
 POINTS = 60
 OUT_DIR = "plots"
+SEED = 37
 
 
 @dataclass
@@ -47,7 +48,7 @@ def prepare():
     set_cwd()
     subprocess.run(["lake", "build", "Bench"])
     subprocess.run(["make", "bench"], cwd="bench-cpp")
-    random.seed(37)
+    random.seed(SEED)
     os.makedirs(OUT_DIR, exist_ok=True)
 
 
