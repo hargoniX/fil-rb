@@ -198,7 +198,10 @@ namespace Raw
 namespace Model
 
 omit [Ord α] [LawfulOrd α] in
-lemma inorder_paintColor_independent (t : Raw α ) : (t.paintColor c).inorder = t.inorder := sorry
+@[simp]
+lemma inorder_paintColor_independent (t : Raw α ) : (t.paintColor c).inorder = t.inorder := by
+  unfold paintColor
+  split <;> simp
 
 omit [Ord α] [LawfulOrd α] in
 lemma baliL_inorder_independent{l r : Raw α} (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l) (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
