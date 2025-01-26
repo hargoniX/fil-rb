@@ -222,7 +222,7 @@ lemma baliR_inorder_independent {l r : Raw α} (hl1 : ∀ y ∈ l, y < x) (hl2 :
     split <;> aesop
     split <;> aesop
 
-lemma sortedInsert_left1 (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b) (h : x < data) :
+lemma sortedInsert_left (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b) (h : x < data) :
   sortedInsert xs x ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
   induction xs with
   | nil => simp[sortedInsert_cons_lt, h]
