@@ -204,12 +204,17 @@ lemma inorder_paintColor_independent (t : Raw α ) : (t.paintColor c).inorder = 
   split <;> simp
 
 omit [Ord α] [LawfulOrd α] in
+omit [Ord α] [LawfulOrd α] in
+lemma inorder_paintColor_independent (t : Raw α ) : (t.paintColor c).inorder = t.inorder := sorry
+
+omit [Ord α] [LawfulOrd α] in
 lemma baliL_inorder_independent{l r : Raw α} (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l) (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
     : (baliL x l r).inorder = l.inorder ++ x :: r.inorder := by
     simp[baliL]
     split <;> aesop
     split <;> aesop
 
+omit [Ord α] [LawfulOrd α] in
 omit [Ord α] [LawfulOrd α] in
 lemma baliR_inorder_independent {l r : Raw α} (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l) (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r)
     : (baliR x l r).inorder = l.inorder ++ x :: r.inorder := by
@@ -225,21 +230,27 @@ lemma sortedInsert_left1 (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a 
     simp
     next e =>
     specialize ih (by intro h1 h2; apply hl1; simp[h2])
-    rw [sortedInsert_cons_lt]
-    rw[sortedInsert_cons_lt]
-    · rfl
-    · sorry
-    · sorry
+    match compare e x with
+    | .lt =>
+             have p : e < x := by sorry--refine compare_lt_iff_lt.mp ?_;
+             rw [sortedInsert_cons_lt]
+             rw [sortedInsert_cons_lt]
+             · rfl
+             · assumption
+             · assumption
+    | .eq => have p : x = e := by sorry
+             subst p
+             let H := sortedInsert (x :: xs)
+             rw[sortedInsert_cons_self]
+             rw[sortedInsert_cons_self]
+             rfl
+    | .gt => have p : x < e := by sorry
+             rw [sortedInsert_cons_gt]
+             rw [sortedInsert_cons_gt]
+             · simp ; assumption
+             · assumption
+             · assumption
 
-
-lemma sortedInsert_left (x data : α) (xs ys : List α) (hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b) (h : x < data) :
-  sortedInsert xs x ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
-  rw [sortedInsert_append_left]
-  simp
-  constructor
-  · assumption
-  · intro a ha
-    exact lt_trans h (hr1 a ha)
 
 lemma sortedInsert_middle (x data : α)(xs ys : List α)(hl1 : ∀ a ∈ xs, a < data ) (hr1 : ∀ b ∈ ys, data < b)(h : x = data) :
   xs ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
@@ -281,6 +292,9 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder): (ins x t).inorde
       simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_lt]
       have H1 := Sorted_append_cons_iff.mp h
       -- Here ```have := bst_iff_sorted_inorder.mpr h``` reports type mismatch, which shouldn't happen
+      simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_lt]
+      have H1 := Sorted_append_cons_iff.mp h
+      -- Here ```have := bst_iff_sorted_inorder.mpr h``` reports type mismatch, which shouldn't happen
       · rw[inorder_ins]
         · apply sortedInsert_left
           · intro a ha
@@ -289,9 +303,14 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder): (ins x t).inorde
             aesop
           · assumption
         · aesop
+        · aesop
       · have := bst_iff_sorted_inorder.mpr h
         aesop
       · have := bst_iff_sorted_inorder.mpr h
+        simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_lt, bst_node]
+        obtain ⟨left_1, right_1⟩ := this
+        obtain ⟨left_2, right_1⟩ := right_1
+        obtain ⟨left_3, right_1⟩ := right_1
         simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_lt, bst_node]
         obtain ⟨left_1, right_1⟩ := this
         obtain ⟨left_2, right_1⟩ := right_1
@@ -302,6 +321,9 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder): (ins x t).inorde
       · have := bst_iff_sorted_inorder.mpr h
         aesop
     · rw[inorder_node] at h
+      rename_i heq
+      simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_eq, inorder_node]
+      subst heq
       rename_i heq
       simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_eq, inorder_node]
       subst heq
@@ -316,6 +338,7 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder): (ins x t).inorde
     · rw[baliR_inorder_independent,inorder_ins, inorder_node]
       simp
       · rw[inorder_node] at h
+        simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_gt]
         simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_gt]
         apply sortedInsert_right
         · intro a ha
@@ -340,9 +363,14 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder): (ins x t).inorde
         obtain ⟨left_1, right_1⟩ := this
         obtain ⟨left_2, right_1⟩ := right_1
         obtain ⟨left_3, right_1⟩ := right_1
+        simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_gt, bst_node]
+        obtain ⟨left_1, right_1⟩ := this
+        obtain ⟨left_2, right_1⟩ := right_1
+        obtain ⟨left_3, right_1⟩ := right_1
         apply bst_ins_bst; assumption
   · split
     · rw[inorder_node, inorder_ins]
+      simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_lt]
       simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_lt]
       · apply sortedInsert_left
         · intro a ha
@@ -360,6 +388,9 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder): (ins x t).inorde
       rename_i heq
       simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_eq, inorder_node]
       subst heq
+      rename_i heq
+      simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_eq, inorder_node]
+      subst heq
       apply sortedInsert_middle
       · intro a ha
         have := Sorted_append_cons_iff.mp h
@@ -369,6 +400,7 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder): (ins x t).inorde
         aesop
       · rfl
     · rw[inorder_node, inorder_ins]
+      simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_gt]
       simp_all only [inorder_node, List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_gt]
       · apply sortedInsert_right
         · intro a ha
