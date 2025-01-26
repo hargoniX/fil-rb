@@ -1,6 +1,5 @@
 import Filrb.Internal.Invariants.BST
-import Filrb.Internal.Invariants.ChildInv
-import Filrb.Internal.Invariants.HeightInv
+import Filrb.Internal.Invariants.RBInv
 import Mathlib.Data.Nat.Log
 
 /-!

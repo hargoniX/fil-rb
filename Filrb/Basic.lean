@@ -53,8 +53,8 @@ def insert (set : Set α) (x : α) : Set α :=
   {
     raw := raw.insert x
     hbst := Internal.Raw.bst_insert_of_bst x raw bst
-    hcolor := Internal.Raw.childInv_insert_of_bst x raw color
-    hheight := Internal.Raw.heightInv_insert_of_bst x raw height
+    hcolor := (Internal.Raw.rbInv_insert_of_rbInv x raw color height).left
+    hheight := (Internal.Raw.rbInv_insert_of_rbInv x raw color height).right
   }
 
 /--
@@ -81,8 +81,8 @@ def erase (set : Set α) (x : α) : Set α :=
   {
     raw := raw.erase x
     hbst := Internal.Raw.bst_erase_of_bst x raw bst
-    hcolor := Internal.Raw.childInv_erase_of_bst x raw color
-    hheight := Internal.Raw.heightInv_erase_of_bst x raw height
+    hcolor := (Internal.Raw.rbInv_erase_of_rbInv x raw color height).left
+    hheight := (Internal.Raw.rbInv_erase_of_rbInv x raw color height).right
   }
 
 /--
