@@ -1,5 +1,5 @@
 import Filrb.Internal.Raw
-
+import Filrb.Internal.Invariants.BST
 /-!
 This module proves that our functionality preserves the `ChildInv` invariant.
 -/
@@ -27,6 +27,7 @@ omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem childInv_nil : ChildInv (.nil : Raw α) := ChildInv.nil
 
 theorem childInv_insert_of_bst (x : α) (t : Raw α) (h : ChildInv t) : ChildInv (t.insert x) := sorry
+
 theorem childInv_erase_of_bst (x : α) (t : Raw α) (h : ChildInv t) : ChildInv (t.erase x) := sorry
 
 end Raw
