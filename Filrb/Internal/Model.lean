@@ -198,7 +198,7 @@ theorem bst_iff_sorted_inorder {t : Raw α} : t.BST ↔ Sorted t.inorder := by
 namespace Raw
 namespace Model
 
-omit [Ord α] [LawfulOrd α] in
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[simp]
 lemma inorder_paintColor_independent (t : Raw α ) : (t.paintColor c).inorder = t.inorder := by
   unfold paintColor
@@ -363,6 +363,7 @@ theorem inorder_insert_eq_insert_inorder {t : Raw α} (x : α) (h : Sorted t.ino
     rw[inorder_ins]
     assumption
 
+omit [Ord α] [LawfulOrd α] in
 theorem baldL_inorder_independent {l r : Raw α}
     (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
     (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r) :
@@ -375,6 +376,7 @@ theorem baldL_inorder_independent {l r : Raw α}
     rw [baliR_inorder_independent] <;> aesop
   . aesop
 
+omit [Ord α] [LawfulOrd α] in
 theorem baldR_inorder_independent {l r : Raw α}
     (hl1 : ∀ y ∈ l, y < x) (hl2 : BST l)
     (hr1 : ∀ y ∈ r, x < y) (hr2 : BST r) :
@@ -387,6 +389,7 @@ theorem baldR_inorder_independent {l r : Raw α}
     rw [baliL_inorder_independent] <;> aesop
   . aesop
 
+omit [Ord α] [LawfulOrd α] in
 theorem appendTrees_inorder_independent {l r : Raw α}
     (hl : BST l) (hr : BST r) (h : ∀ x ∈ l, ∀ y ∈ r, x < y) :
     (l.appendTrees r).inorder = l.inorder ++ r.inorder := by
