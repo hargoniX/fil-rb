@@ -229,7 +229,8 @@ lemma sortedInsert_left (x data : α) (xs ys : List α) (hr1 : ∀ b ∈ ys, dat
         exact lt_trans h (hr1 a h_2)
 
 lemma sortedInsert_middle (x data : α)(xs ys : List α)(hl1 : ∀ a ∈ xs, a < data )
-    (hr1 : ∀ b ∈ ys, data < b)(h : x = data) : xs ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
+    (hr1 : ∀ b ∈ ys, data < b)(h : x = data) :
+    xs ++ data :: ys = sortedInsert (xs ++ data :: ys) x := by
   induction xs with
   | nil => simp[sortedInsert_cons_self, h]
   | cons x xs ih  =>
@@ -295,7 +296,7 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder):
         aesop
       · rfl
     · rw[baliR_inorder_independent,inorder_ins, inorder_node]
-      simp
+      simp only [List.append_assoc, List.singleton_append]
       · rw[inorder_node] at h
         simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_gt]
         apply sortedInsert_right
