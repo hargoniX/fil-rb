@@ -72,6 +72,22 @@ theorem red_of_not_black {c : Color} : c ≠ .black ↔ c = .red := by
 theorem black_of_not_red {c : Color} : c ≠ .red  ↔ c = .black := by
   cases c <;> simp_all
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem paintColor_black_rootColor_eq_black {t : Raw α} :
+    (t.paintColor .black).rootColor = .black := by
+  cases t <;> simp
+
+omit [Preorder α] [LawfulOrd α] in
+@[simp]
+theorem rootColor_insert_eq_black {t : Raw α} {x : α} : (t.insert x).rootColor = .black := by
+  cases t <;> simp [insert]
+
+omit [Preorder α] [LawfulOrd α] in
+@[simp]
+theorem rootColor_erase_eq_black {t : Raw α} {x : α} : (t.erase x).rootColor = .black := by
+  cases t <;> simp [erase]
+
 /--
 The child invariant for red black trees: Red nodes must have black children.
 -/

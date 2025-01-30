@@ -18,6 +18,7 @@ structure Set (α : Type u) [Preorder α] [Ord α] [LawfulOrd α] where
   hbst: Internal.Raw.BST raw
   hcolor : Internal.Raw.ChildInv raw
   hheight : Internal.Raw.HeightInv raw
+  hroot : raw.rootColor = .black
 
 namespace Set
 
@@ -33,6 +34,7 @@ def empty : Set α :=
     hbst := Internal.Raw.bst_nil
     hcolor := Internal.Raw.childInv_nil
     hheight := Internal.Raw.heightInv_nil
+    hroot := Internal.Raw.rootColor_nil
   }
 
 instance : EmptyCollection (Set α) where
@@ -49,12 +51,13 @@ Insert `x` into `set`.
 -/
 @[inline]
 def insert (set : Set α) (x : α) : Set α :=
-  let ⟨raw, bst, color, height⟩ := set
+  let ⟨raw, bst, color, height, _⟩ := set
   {
     raw := raw.insert x
     hbst := Internal.Raw.bst_insert_of_bst x raw bst
     hcolor := (Internal.Raw.rbInv_insert_of_rbInv x raw color height).left
     hheight := (Internal.Raw.rbInv_insert_of_rbInv x raw color height).right
+    hroot := Internal.Raw.rootColor_insert_eq_black
   }
 
 /--
@@ -77,12 +80,13 @@ Erase `x` from `set`, if `x` is not in `set` leave it untouched.
 -/
 @[inline]
 def erase (set : Set α) (x : α) : Set α :=
-  let ⟨raw, bst, color, height⟩ := set
+  let ⟨raw, bst, color, height, _⟩ := set
   {
     raw := raw.erase x
     hbst := Internal.Raw.bst_erase_of_bst x raw bst
     hcolor := (Internal.Raw.rbInv_erase_of_rbInv x raw color height).left
     hheight := (Internal.Raw.rbInv_erase_of_rbInv x raw color height).right
+    hroot := Internal.Raw.rootColor_erase_eq_black
   }
 
 /--

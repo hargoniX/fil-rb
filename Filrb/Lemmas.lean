@@ -15,8 +15,8 @@ namespace Set
 variable [Preorder α] [Ord α] [LawfulOrd α]
 variable {set : Set α}
 
-theorem height_le_log_size : set.height ≤ 2 * Nat.log 2 set.size + 2 :=
-  Internal.Raw.height_le_log_size set.hcolor set.hheight
+theorem height_le_log_size : set.height ≤ 2 * Nat.log 2 (set.size + 1) :=
+  Internal.Raw.height_le_log_size set.hcolor set.hheight set.hroot
 
 open Filrb.Internal.Model
 
