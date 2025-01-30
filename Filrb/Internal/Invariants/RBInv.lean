@@ -124,11 +124,16 @@ theorem blackHeight_nil : (.nil : Raw α).blackHeightLeft = 0 := by
   simp [blackHeightLeft]
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
-theorem blackHeight_node {l r : Raw α} :
-  (node l d c r).blackHeightLeft = v + 1 ↔ match c with
-    | .black => l.blackHeightLeft = v
-    | .red => l.blackHeightLeft = v + 1:= by
-  aesop (add norm blackHeightLeft)
+@[simp]
+theorem blackHeight_black_node {l r : Raw α} :
+    (node l d .black r).blackHeightLeft = l.blackHeightLeft + 1 := by
+  simp [blackHeightLeft]
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem blackHeight_red_node {l r : Raw α} :
+    (node l d .red r).blackHeightLeft = l.blackHeightLeft := by
+  simp [blackHeightLeft]
 
 /--
 The height invariant for red black trees: Every path from a given node to any of its leaves goes
@@ -167,13 +172,6 @@ theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
     HeightInv (t.paintColor c) ↔ HeightInv t := by
   unfold paintColor
   aesop
-
-omit [Preorder α] [Ord α] [LawfulOrd α] in
-theorem blackHeight_node_of_heightInv {l r : Raw α} (h : HeightInv (.node l d c r)) :
-  (node l d c r).blackHeightLeft = v + 1 ↔ match c with
-    | .black => l.blackHeightLeft = v
-    | .red => l.blackHeightLeft = v + 1:= by
-  aesop (add norm blackHeightLeft)
 
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.insert x) ∧ HeightInv (t.insert x) := by
