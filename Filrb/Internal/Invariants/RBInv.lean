@@ -13,6 +13,36 @@ namespace Raw
 
 variable [Preorder α] [Ord α] [LawfulOrd α]
 
+-- TODO: Find a place for these, but this will require some maintenance
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem paintColor_nil : paintColor c (.nil : Raw α) = Raw.nil := by
+  simp [paintColor]
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem paintColor_node : paintColor c (.node l d c' r) = .node l d c r := by
+  simp [paintColor]
+
+omit [Preorder α] [LawfulOrd α] in
+@[simp]
+theorem del_nil {x : α} : del x Raw.nil = Raw.nil := by
+  simp [del]
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem rootColor_nil : (Raw.nil : Raw α).rootColor = Color.black := by
+  simp [rootColor]
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem rootColor_node : (Raw.node l d c r).rootColor = c := by
+  simp [rootColor]
+
+@[simp]
+theorem isBlack_node : (node l d c r).isBlack = (c == .black) := by
+  cases c <;> simp [isBlack]
+
 /--
 The child invariant for red black trees: Red nodes must have black children.
 -/
@@ -70,21 +100,15 @@ theorem childInv_node {l r : Raw α} (h : ChildInv (.node l d c r)) :
   rcases h <;> simp_all
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
-theorem childInv_color_independent {l r : Raw α} (h : ChildInv (.node l d c r)) :
-    ChildInv (.node l d .black r) := by
-  rw [childInv_black_node]
-  apply childInv_node h
-
-omit [Preorder α] [Ord α] [LawfulOrd α] in
-theorem childInv_paintColorBlack_of_childInv (t : Raw α) (h : ChildInv t) :
-    ChildInv (t.paintColor .black) := by
-  unfold paintColor
-  split <;> aesop
-
-@[aesop safe apply]
-theorem childInv2_of_childInvL (hl : ChildInv l) (hr : ChildInv r) :
-    ChildInv2 (.node l d c r) := by
-  simp [ChildInv2, paintColor, hl, hr]
+@[simp]
+theorem childInv2_node {l r : Raw α} :
+    ChildInv2 (.node l d c r) ↔ ChildInv l ∧ ChildInv r := by
+  constructor
+  · intro h
+    cases h
+    simp_all
+  · rintro ⟨_, _⟩
+    apply ChildInv.black <;> assumption
 
 def blackHeightLeft (t : Raw α) : Nat :=
   match t with
@@ -93,6 +117,18 @@ def blackHeightLeft (t : Raw α) : Nat :=
     match color with
     | .black => blackHeightLeft left + 1
     | .red => blackHeightLeft left
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem blackHeight_nil : (.nil : Raw α).blackHeightLeft = 0 := by
+  simp [blackHeightLeft]
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem blackHeight_node {l r : Raw α} :
+  (node l d c r).blackHeightLeft = v + 1 ↔ match c with
+    | .black => l.blackHeightLeft = v
+    | .red => l.blackHeightLeft = v + 1:= by
+  aesop (add norm blackHeightLeft)
 
 /--
 The height invariant for red black trees: Every path from a given node to any of its leaves goes
@@ -112,6 +148,32 @@ attribute [pp_nodot] HeightInv
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[simp]
 theorem heightInv_nil : HeightInv (.nil : Raw α) := HeightInv.nil
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem heightInv_node {l r : Raw α} :
+    HeightInv (node l d c r) ↔
+    HeightInv l ∧ HeightInv r ∧ l.blackHeightLeft = r.blackHeightLeft := by
+  constructor
+  · intro h
+    cases h
+    simp_all
+  · rintro ⟨_, _, _⟩
+    apply HeightInv.node <;> assumption
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
+    HeightInv (t.paintColor c) ↔ HeightInv t := by
+  unfold paintColor
+  aesop
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem blackHeight_node_of_heightInv {l r : Raw α} (h : HeightInv (.node l d c r)) :
+  (node l d c r).blackHeightLeft = v + 1 ↔ match c with
+    | .black => l.blackHeightLeft = v
+    | .red => l.blackHeightLeft = v + 1:= by
+  aesop (add norm blackHeightLeft)
 
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.insert x) ∧ HeightInv (t.insert x) := by
