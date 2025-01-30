@@ -43,6 +43,35 @@ theorem rootColor_node : (Raw.node l d c r).rootColor = c := by
 theorem isBlack_node : (node l d c r).isBlack = (c == .black) := by
   cases c <;> simp [isBlack]
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[aesop safe forward]
+theorem node_of_isBlack {t : Raw α} (h : t.isBlack) :
+    ∃ l d r, t = .node l d .black r := by
+  cases t with
+  | nil => simp_all [isBlack]
+  | node l d c r =>
+    exists l, d, r
+    unfold isBlack at h
+    split at h <;> simp_all
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[aesop safe forward]
+theorem node_of_rootColor_eq_red {t : Raw α} (h : t.rootColor = .red) :
+    ∃ l d r, t = .node l d .red r := by
+  cases t with
+  | nil => simp_all
+  | node l d c r =>
+    exists l, d, r
+    simp_all
+
+@[simp]
+theorem red_of_not_black {c : Color} : c ≠ .black ↔ c = .red := by
+  cases c <;> simp_all
+
+@[simp]
+theorem black_of_not_red {c : Color} : c ≠ .red  ↔ c = .black := by
+  cases c <;> simp_all
+
 /--
 The child invariant for red black trees: Red nodes must have black children.
 -/
