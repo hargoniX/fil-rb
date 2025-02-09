@@ -292,9 +292,26 @@ theorem rbInv_baliR_of_rbInv {x : α} {l r : Raw α}
     ChildInv (baliR x l r) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
   sorry
 
+-- lemma rbInv_insert_of_childInv (x : α) (t : Raw α) (hc : ChildInv t) : ChildInv (t.insert x) := sorry
+
+-- lemma rbInv_insert_of_heightInv (x : α) (t : Raw α) (hh : HeightInv t) : HeightInv (t.insert x) := sorry
+
+lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightInv t) :
+     (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) := by
+     unfold ins
+     induction t with
+     | nil => aesop
+     | node => sorry
+
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.insert x) ∧ HeightInv (t.insert x) := by
-  sorry
+    simp[insert]
+    simp[paintColor]
+    split
+    · simp_all
+    · next t1 left data c right heq =>
+      have := rbInv_ins_of_rbInv x t hc hh
+      split at this <;> aesop
 
 theorem rbInv_baldL_of_rbInv {x : α} {l r t : Raw α}
     (hcl2 : ChildInv2 l) (hcr : ChildInv r)
