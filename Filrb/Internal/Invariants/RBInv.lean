@@ -79,6 +79,17 @@ theorem red_of_not_black {c : Color} : c ≠ .black ↔ c = .red := by
 theorem black_of_not_red {c : Color} : c ≠ .red  ↔ c = .black := by
   cases c <;> simp_all
 
+
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+theorem rootColor_black_of_not_red {t : Raw α}
+    (h : ∀ (l : Raw α) (d : α) (r : Raw α), t = node l d .red r → False) :
+    rootColor t = .black := by
+  cases ht : t with
+  | nil => simp
+  | node l d c r =>
+    have := h l d r
+    aesop
+
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[simp]
 theorem paintColor_black_rootColor_eq_black {t : Raw α} :
@@ -177,7 +188,7 @@ omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[aesop safe forward]
 theorem childInv_node {l r : Raw α} (h : ChildInv (.node l d c r)) :
     ChildInv l ∧ ChildInv r := by
-  rcases h <;> simp_all
+  cases h <;> simp_all
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[simp]
@@ -193,7 +204,7 @@ theorem childInv2_node {l r : Raw α} :
 -- TODO: Unable to make this as an aesop rule since any node will be simped into ChildInvs again :/
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem childInv2_of_childInv {t : Raw α} (h : ChildInv t) : ChildInv2 t := by
-  rcases t
+  cases t
   . simp
   . have := childInv_node h
     simp [this]
@@ -299,35 +310,20 @@ theorem rbInv_baldL_of_rbInv {x : α} {l r t : Raw α}
     simp only [blackHeight_black_node, Nat.add_right_cancel_iff] at hbh
     rw [← hbh]
     subst heq
-    cases l with
-    | nil => apply rbInv_baliR_of_rbInv <;> aesop
-    | node ll ld lc lr =>
-      have : lc = .black := by
-        have := lnr ll ld lr
-        simpa using this
-      apply rbInv_baliR_of_rbInv <;> aesop
+    have := rootColor_black_of_not_red lnr
+    cases l <;> apply rbInv_baliR_of_rbInv <;> aesop
   . rename_i rll rld rlr rd rr lnr
-    simp only [isBlack_node, beq_iff_eq, reduceCtorEq, ↓reduceIte, blackHeight_red_node, blackHeight_black_node]
-    simp only [blackHeight_red_node, blackHeight_black_node, Nat.add_right_cancel_iff] at hbh
-    simp only [childInv_red_node, childInv_black_node, rootColor_node, true_and] at hcr
-    have ⟨⟨hcrll, hcrlr⟩, hcrr, hrrb⟩ := hcr
-    simp only [heightInv_node, blackHeight_black_node] at hhr
-    have ⟨⟨hhrll,hhrlr,hhrlbh⟩,hhrr,hrbh⟩ := hhr
-    have hcrr2 : ChildInv2 (paintColor Color.red rr) := childInv2_of_paintColor_childInv hcrr
-    have hhrr2: HeightInv (paintColor Color.red rr) := by aesop
-    have hrbh2 : rlr.blackHeightLeft = (paintColor Color.red rr).blackHeightLeft := by
-      aesop (add norm paintColor)
-    have ⟨hcBali,hhBali,hbhBali⟩ := rbInv_baliR_of_rbInv (x := rd) hcrlr hcrr2 hhrlr hhrr2 hrbh2
-    cases l with
-    | nil => aesop
-    | node ll ld lc lr =>
-      have : lc = .black := by
-        have := lnr ll ld lr
-        simpa using this
+    have : ChildInv2 (paintColor Color.red rr) := by
+      apply childInv2_of_paintColor_childInv
       aesop
+    have : rlr.blackHeightLeft = (paintColor Color.red rr).blackHeightLeft := by
+      aesop (add norm paintColor)
+    have := rbInv_baliR_of_rbInv (x := rd) (l := rlr) (r := paintColor .red rr)
+    have := rootColor_black_of_not_red lnr
+    cases l <;> aesop
   -- Given our Invariants, the last case of baldL cannot be reached.
   -- We can easily proof this by case analysis on ChildInv r
-  . rcases hcr
+  . cases hcr
     -- Cannot be nil due to the height difference
     . simp only [blackHeight_nil, Nat.add_one_ne_zero] at hbh
     -- Cannot be black since an earlier case already handles r as a black node
@@ -358,35 +354,21 @@ theorem rbInv_baldR_of_rbInv {x : α} {l r t : Raw α}
     simp only [isBlack_node, beq_self_eq_true, ↓reduceIte, blackHeight_black_node]
     simp only [blackHeight_black_node, Nat.add_right_cancel_iff] at hbh
     subst heq
-    cases r with
-    | nil => apply rbInv_baliL_of_rbInv <;> aesop
-    | node rl rd rc rr =>
-      have : rc = .black := by
-        have := rnr rl rd rr
-        simpa using this
-      apply rbInv_baliL_of_rbInv <;> aesop
+    have := rootColor_black_of_not_red rnr
+    cases r <;> apply rbInv_baliL_of_rbInv <;> aesop
   . rename_i lll lld llr ld lr rnr
-    simp only [isBlack_node, beq_iff_eq, reduceCtorEq, ↓reduceIte, blackHeight_red_node]
-    simp only [blackHeight_red_node] at hbh
-    simp only [childInv_red_node, childInv_black_node, rootColor_node, and_true] at hcl
-    have ⟨hclll, hlllb, hcllr, hclr⟩ := hcl
-    simp only [heightInv_node, blackHeight_black_node] at hhl
-    have ⟨hhlll,⟨hhllr,hhlr,hlrbh⟩,hllbh⟩ := hhl
-    have hclll2 : ChildInv2 (paintColor Color.red lll) := childInv2_of_paintColor_childInv hclll
-    have hhlll2: HeightInv (paintColor Color.red lll) := by aesop
-    have hllbh2 : (paintColor Color.red lll).blackHeightLeft = llr.blackHeightLeft := by
-      aesop (add norm paintColor)
-    have ⟨hcBali,hhBali,hbhBali⟩ := rbInv_baliL_of_rbInv (x := lld) hclll2 hcllr hhlll2 hhllr hllbh2
-    cases r with
-    | nil => aesop
-    | node rl rd rc rr =>
-      have : rc = .black := by
-        have := rnr rl rd rr
-        simpa using this
+    have : ChildInv2 (paintColor Color.red lll) := by
+      apply childInv2_of_paintColor_childInv
       aesop
+    have : (paintColor Color.red lll).blackHeightLeft = llr.blackHeightLeft := by
+      simp only [blackHeight_red_node] at hbh
+      aesop (add norm paintColor)
+    have := rbInv_baliL_of_rbInv (x := lld) (l := paintColor .red lll) (r := llr)
+    have := rootColor_black_of_not_red rnr
+    cases r <;> aesop
   -- Given our Invariants, the last case of baldR cannot be reached.
   -- We can easily proof this by case analysis on ChildInv l
-  . rcases hcl
+  . cases hcl
     -- Cannot be nil due to the height difference
     . simp only [blackHeight_nil, Nat.self_eq_add_left, Nat.add_one_ne_zero] at hbh
     -- Cannot be black since an earlier case already handles l as a black node
@@ -400,7 +382,7 @@ theorem rbInv_baldR_of_rbInv {x : α} {l r t : Raw α}
       simp only [isBlack, Bool.false_eq_true, ↓reduceIte, blackHeight_red_node]
       cases ll with
       | nil =>
-        simp [heightInv_node, heightInv_nil, true_and] at hhl
+        simp only [heightInv_node, heightInv_nil, true_and] at hhl
         simp [← hhl.right] at hbh
       | node lll lld llc llr =>
         cases lr with
@@ -409,9 +391,9 @@ theorem rbInv_baldR_of_rbInv {x : α} {l r t : Raw α}
           have := lnr (.node lll lld llc llr) ld
           aesop
 
--- Lemma 8.1:
--- split_min has more indirections and thus the input/output relation is a lot more involved.
--- But we know: appendTrees reduces the tree height if the node was black
+-- In contrast to Lemma 8.1, which reasons about split_min,
+-- appendTrees is way simpler in its input/output relations.
+-- We know: appendTrees reduces the tree height if the node was black
 -- This is maybe not as precise as it could be, but it is enough for what we need it.
 theorem rbInv_appendTrees_of_rbInv {l r : Raw α}
     (hc : ChildInv (.node l d c r)) (hh : HeightInv (.node l d c r)) :
@@ -424,98 +406,60 @@ theorem rbInv_appendTrees_of_rbInv {l r : Raw α}
     ∧ HeightInv (appendTrees l r) := by
   unfold appendTrees
   split
-  . rename_i hcb -- root black
+  . rename_i hcb
     split
-    . aesop (add safe forward childInv2_of_childInv) -- nil l
-    . aesop (add safe forward childInv2_of_childInv) -- nil r
+    . aesop (add safe forward childInv2_of_childInv)
+    . aesop (add safe forward childInv2_of_childInv)
     . rename_i left1 data1 right1 left2 data2 right2
-      have := rbInv_appendTrees_of_rbInv (d := d) (c := .red) (l := right1) (r := left2)
-      simp only [hcb, blackHeight_black_node, blackHeight_red_node, Nat.add_one_sub_one]
       simp only [hcb, childInv_black_node, childInv_red_node, heightInv_node,
         blackHeight_red_node] at hc hh
-      split
-      -- Root black, both childs red: appendTrees result is red
-      . aesop
-      -- Root black, both childs red: appendTrees result is black
-      . rename_i happnr
-        have happb : rootColor (right1.appendTrees left2) = .black := by
-          cases h : right1.appendTrees left2 with
-          | nil => simp
-          | node l d c r =>
-            have := happnr l d r
-            aesop
-        aesop
+      have := rbInv_appendTrees_of_rbInv (d := d) (c := .red) (l := right1) (r := left2)
+      aesop (add safe forward rootColor_black_of_not_red)
     . rename_i left1 data1 right1 left2 data2 right2
       simp only [hcb, blackHeight_black_node, Nat.add_one_sub_one]
       simp only [hcb, childInv_black_node, heightInv_node, blackHeight_black_node,
         Nat.add_right_cancel_iff] at hc hh
       split
-      -- Root black, both childs black: appendTrees result is red
       . have := rbInv_appendTrees_of_rbInv (d := d) (c := .black) (l := right1) (r := left2)
         aesop
-      -- Root black, both childs black: appendTrees result is black
       . rename_i happnr
-        have happb : rootColor (right1.appendTrees left2) = .black := by
-          cases h : right1.appendTrees left2 with
-          | nil => simp
-          | node l d c r =>
-            have := happnr l d r
-            aesop
+        have := rootColor_black_of_not_red happnr
         have := rbInv_appendTrees_of_rbInv (d := d) (c := .red) (l := right1) (r := left2)
         have := rbInv_baldL_of_rbInv (x := data1) (l := left1)
             (r := .node (right1.appendTrees left2) data2 .black right2)
             (t := baldL data1 left1 (node (right1.appendTrees left2) data2 .black right2))
         aesop (add safe forward [childInv2_of_childInv, black_appendTrees])
-    -- Root black, only right red
     . rename_i left data _ _ hlnr
-      have : l.rootColor = .black := by
-        cases l with
-        | nil => simp_all
-        | node ll ld lc lr =>
-          have := hlnr ll ld lr
-          simp_all
+      have := rootColor_black_of_not_red hlnr
       have := rbInv_appendTrees_of_rbInv (d := d) (c := .red) (l := l) (r := left)
       aesop
-    -- Root black, only left red
     . rename_i right hrnl hrnr _
-      have : r.rootColor = .black := by
-        cases r with
-        | nil => simp_all
-        | node rl rd rc rr =>
-          have := hrnr rl rd rr
-          simp_all
       simp only [hcb, childInv_black_node, childInv_red_node, heightInv_node, blackHeight_red_node] at hc hh
+      have := rootColor_black_of_not_red hrnr
       have := rbInv_appendTrees_of_rbInv (d := d) (c := .red) (l := right) (r := r)
       aesop
-  . rename_i hcnb -- root red
+  . rename_i hcnb
     simp only [red_of_not_black] at hcnb
     split
-    . aesop    -- nil l
-    . aesop    -- nil r
-    . simp_all -- both red: contradiction
+    . aesop
+    . aesop
+    . simp_all
     . rename_i left1 data1 right1 left2 data2 right2
       simp only [hcnb, blackHeight_red_node, blackHeight_black_node]
       simp only [hcnb, childInv_red_node, childInv_black_node, rootColor_node, and_true, true_and,
         heightInv_node, blackHeight_black_node, Nat.add_right_cancel_iff] at hc hh
       split
-      -- Root red, both childs black: appendTrees result is red
       . have := rbInv_appendTrees_of_rbInv (d := d) (c := .black) (l := right1) (r := left2)
         aesop
-      -- Root red, both childs black: appendTrees result is black
       . rename_i happnr
-        have happb : rootColor (right1.appendTrees left2) = .black := by
-          cases h : right1.appendTrees left2 with
-          | nil => simp
-          | node l d c r =>
-            have := happnr l d r
-            aesop
+        have := rootColor_black_of_not_red happnr
         have := rbInv_appendTrees_of_rbInv (d := d) (c := .red) (l := right1) (r := left2)
         have := rbInv_baldL_of_rbInv (x := data1) (l := left1)
           (r := .node (right1.appendTrees left2) data2 .black right2)
           (t := baldL data1 left1 (node (right1.appendTrees left2) data2 .black right2))
         aesop (add safe forward [childInv2_of_childInv, black_appendTrees])
-    . simp_all -- one red: contradiction
-    . simp_all -- one red: contradiction
+    . simp_all
+    . simp_all
 
 theorem rbInv_del_of_rbInv {t t' : Raw α}
     (hc : ChildInv t) (hh : HeightInv t) (heq : del x t = t') :
@@ -530,13 +474,11 @@ theorem rbInv_del_of_rbInv {t t' : Raw α}
   | case2 l d c r hord lb ih =>
     simp only [del, hord] at heq
     simp only [lb, ↓reduceIte, rootColor_of_isBlack lb, forall_apply_eq_imp_iff₂] at heq ih
-    have ⟨hcl, hcr⟩ := childInv_node hc
     have ⟨hhl, hhr, hht⟩ := heightInv_node.mp hh
-    have ⟨⟨hbh,hcdel⟩,hhdel⟩ := ih hcl hhl
     have : (del x l).blackHeightLeft + 1 = r.blackHeightLeft := by
       symm at hht
       aesop
-    have := rbInv_baldL_of_rbInv hcdel hcr hhdel hhr this heq
+    have := rbInv_baldL_of_rbInv (x := d) (l := del x l) (r := r) (t := t')
     split at this
     . aesop (add safe forward childInv2_of_childInv)
     -- (l-black,) r-red -> .node l d c r has to be black
@@ -561,15 +503,13 @@ theorem rbInv_del_of_rbInv {t t' : Raw α}
   | case5 l d c r hord rb ih =>
     simp only [del, hord] at heq
     simp only [rb, ↓reduceIte, rootColor_of_isBlack rb, forall_apply_eq_imp_iff₂] at heq ih
-    have ⟨hcl, hcr⟩ := childInv_node hc
     have ⟨hhl, hhr, hht⟩ := heightInv_node.mp hh
-    have ⟨⟨hbh,hcdel⟩,hhdel⟩ := ih hcr hhr
+    have ⟨hcl, hcr⟩ := childInv_node hc
     have : l.blackHeightLeft = (del x r).blackHeightLeft + 1 := by aesop
-    have := rbInv_baldR_of_rbInv hcl hcdel hhl hhdel this heq
+    have := rbInv_baldR_of_rbInv (x := d) (l := l) (r := del x r) (t := t')
     split at this
     . aesop (add safe forward childInv2_of_childInv)
     . rename_i hrnb
-      simp at hrnb
       -- l-red (, r-black) -> .node l d c r has to be black
       -- We actually require heightInv to prove that the right node is red,
       -- since we only yet know that it is not a black _node_ but it could be a (black) nil
@@ -577,14 +517,14 @@ theorem rbInv_del_of_rbInv {t t' : Raw α}
         cases l with
         | nil => aesop
         | node ll ld lc lr =>
-          rcases hc
+          cases hc
           . simp
           . aesop
       aesop
   | case6 l d c r hord rb ih =>
     have := childInv_node hc
     simp only [del, hord, rb, Bool.false_eq_true, ↓reduceIte] at heq ih
-    rcases r <;> aesop
+    cases r <;> aesop
 
 theorem rbInv_erase_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.erase x) ∧ HeightInv (t.erase x) := by
