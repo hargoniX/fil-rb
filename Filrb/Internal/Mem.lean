@@ -189,7 +189,7 @@ theorem mem_of_mem_baldR {d : α} (h : x ∈ baldR d t₁ t₂) : x ∈ t₁ ∨
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[aesop safe forward]
 theorem mem_of_mem_appendTrees {t₁ t₂ : Raw α} (h : x ∈ appendTrees t₁ t₂) : x ∈ t₁ ∨ x ∈ t₂  := by
-  induction t₁, t₂ using appendTrees.induct <;> aesop (add safe h, norm appendTrees)
+  induction t₁, t₂ using appendTrees.induct <;> aesop (add norm appendTrees)
 
 @[aesop safe forward]
 theorem mem_of_mem_del {d : α} (h : x ∈ del d t) : x ∈ t := by
