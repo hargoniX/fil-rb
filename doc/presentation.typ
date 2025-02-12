@@ -1,34 +1,62 @@
-#import "@preview/codelst:2.0.0": sourcecode
 #import "@preview/touying:0.5.5": *
 #import "@preview/diagraph:0.3.0" : raw-render
+#import "@preview/codelst:2.0.0": sourcecode
+#import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
+#import "@preview/ctheorems:1.1.3": *
 #import themes.metropolis: *
 
-#let g_lean_blue = rgb("#0073A3")
+#let g_lmu_green = rgb("#00883A") // dark-green LMU
 
-#let target_date = datetime(year: 2025, month: 1, day: 15)
+#let th_pres = thmbox("theorem", "Theorem", base: none,
+  fill: rgb("#eeffee"), inset: 15pt, breakable: true
+)
+#show: thmrules.with(qed-symbol: $square$)
+
+#let target_date = datetime(year: 2025, month: 3, day: 3)
 
 #show: metropolis-theme.with(
   aspect-ratio: "16-9",
   config-info(
-    title: [Automated Bit-Level Reasoning in Lean 4],
-    author: [Henrik Böving],
+    title: [Formalizing RBTrees in Lean4],
+    subtitle: [Some fun stuff],
+    author: [Daniel Soukup, Henrik Böving, Lingyin Luo],
     date: target_date.display(),
-    institution: [Lean FRO],
+    institution: text(14pt, smallcaps("Ludwig-Maximilians-Universität München")),
+    logo: figure(image("figures/sigillum.svg", height: 35%)),
   ),
+  footer: self => self.info.institution,
+  header-right: align(image("figures/sigillum.svg", height: 400%), left),
+  footer-progress: false,
   config-colors(
-    primary: g_lean_blue,
-    secondary: g_lean_blue,
+    primary: g_lmu_green,
+    secondary: g_lmu_green,
   ),
   config-common(
     slide-level: 2
+  ),
+  config-page(
+    header-ascent: 15%,
   )
 )
 
+// should do something like for the relevant lean snippets
+//#show raw.where(lang: "agda"): r => {
+//  show "plus": set text(lmu_blue)
+//  show "+": set text(lmu_blue)
+//  show "_+_": set text(lmu_blue)
+//  show "ℕ": set text(lmu_blue)
+//  show "zero": set text(g_prim)
+//  show "suc": set text(g_prim)
+//  r
+//}
+
 #title-slide()
 
+= Outline <touying:hidden>
+
+#outline(title: none, indent: 1em, depth: 1)
 
 = Motivation
-
 == Motivation
 
 A slide with some *important* information and an equation:
@@ -121,6 +149,17 @@ Extra content for the same slide referencing @cadical:
   - 2.1
   - 2.2
 - 3
+
+== Lean MLIR
+#figure(
+  image("figures/sigillum.svg", height: 80%),
+  caption: [LMU sigillum],
+)
+
+== Theorem
+#th_pres("Confluence ")[
+  For any well-typed term $t$ if $t arrow.r.squiggly^* u_1$ and $t arrow.r.squiggly^* u_2$ for some terms $u_1$ and $u_2$, then there is a term $v$ such that $u_1 arrow.r.squiggly^* v$ and $u_2 arrow.r.squiggly^* v$.
+]
 
 == Conclusion
 - nipkow proofs
