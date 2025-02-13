@@ -319,8 +319,37 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightIn
         -- the goal contains an ∧ operator, but it seems like I cannot split it
         -- baliL and baliR make their job especially during HeightInv
         split
-        · next h =>-- big case 1: root color is black, ChildInv
-          sorry
+        · next h => -- big case 1: root color is black, ChildInv
+          unfold ins
+          split
+          · aesop
+          · next t_1 left_1 data_1 right_1 heq =>
+            split
+            · simp at heq
+              obtain ⟨h1, h2, h3, h4⟩ := heq
+              subst h1 h2 h3 h4
+              let L := ins x left
+              constructor
+              · have h_ins_l_c2 : ChildInv2 L := by sorry
+                have h_ins_l_h : HeightInv L:= by sorry
+                have hH: blackHeightLeft L = blackHeightLeft right := by sorry
+                have h_baliL : (ChildInv (baliL data L right)) ∧
+                                 HeightInv (baliL data L right) ∧
+                                 blackHeightLeft (baliL data L right) = blackHeightLeft L + 1 :=
+                                 rbInv_baliL_of_rbInv L right h_ins_l_h hhr h_ins_l_c2 hcr hH
+                rcases h_baliL
+                aesop
+              · sorry
+            · aesop
+            · simp at heq
+              obtain ⟨h1, h2, h3, h4⟩ := heq
+              subst h1 h2 h3 h4
+              have L := ins x left
+              sorry
+          · split
+            · sorry
+            · aesop
+            · sorry
         · -- big case 2: root color is red, ChildInv2
           sorry
 
