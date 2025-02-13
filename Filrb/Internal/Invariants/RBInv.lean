@@ -292,16 +292,39 @@ theorem rbInv_baliR_of_rbInv {x : α} {l r : Raw α}
     ChildInv (baliR x l r) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
   sorry
 
--- lemma rbInv_insert_of_childInv (x : α) (t : Raw α) (hc : ChildInv t) : ChildInv (t.insert x) := sorry
+lemma rbInv_baliL_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) (hcl: ChildInv2 l)
+    (hcr: ChildInv r) (hh: blackHeightLeft l = blackHeightLeft r) :
+    (ChildInv (baliL x l r)) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := sorry
 
--- lemma rbInv_insert_of_heightInv (x : α) (t : Raw α) (hh : HeightInv t) : HeightInv (t.insert x) := sorry
+lemma rbInv_baliR_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) (hcl: ChildInv l)
+    (hcr: ChildInv2 r) (hh: blackHeightLeft l = blackHeightLeft r) :
+    (ChildInv (baliR x l r)) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := sorry
+
 
 lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightInv t) :
      (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) := by
-     unfold ins
      induction t with
-     | nil => aesop
-     | node => sorry
+     | nil =>
+     simp_all only [childInv_nil, heightInv_nil, rootColor_nil, beq_self_eq_true, ↓reduceIte]
+     apply And.intro
+     · unfold ins; aesop
+     · unfold ins; aesop
+     | node left data color right lih rih =>
+        constructor
+        · aesop
+          · unfold ins
+            split
+            · sorry
+            · sorry
+            · sorry
+          · simp[ChildInv2,paintColor]
+            split
+            · aesop
+            · next t left data c right t2 left2 data2 c2 right2 heq=>
+                aesop
+                · sorry
+                · sorry
+        · sorry
 
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.insert x) ∧ HeightInv (t.insert x) := by
