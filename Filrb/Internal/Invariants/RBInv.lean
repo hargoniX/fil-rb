@@ -278,19 +278,19 @@ theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
   unfold paintColor
   aesop
 
-theorem rbInv_baliL_of_rbInv {x : α} {l r : Raw α}
-    (hcl : ChildInv2 l) (hcr : ChildInv r)
-    (hhl : HeightInv l) (hhr : HeightInv r)
-    (hbh : blackHeightLeft l = blackHeightLeft r) :
-    ChildInv (baliL x l r) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
-  sorry
+-- theorem rbInv_baliL_of_rbInv {x : α} {l r : Raw α}
+--     (hcl : ChildInv2 l) (hcr : ChildInv r)
+--     (hhl : HeightInv l) (hhr : HeightInv r)
+--     (hbh : blackHeightLeft l = blackHeightLeft r) :
+--     ChildInv (baliL x l r) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
+--   sorry
 
-theorem rbInv_baliR_of_rbInv {x : α} {l r : Raw α}
-    (hcl : ChildInv l) (hcr : ChildInv2 r)
-    (hhl : HeightInv l) (hhr : HeightInv r)
-    (hbh : blackHeightLeft l = blackHeightLeft r) :
-    ChildInv (baliR x l r) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
-  sorry
+-- theorem rbInv_baliR_of_rbInv {x : α} {l r : Raw α}
+--     (hcl : ChildInv l) (hcr : ChildInv2 r)
+--     (hhl : HeightInv l) (hhr : HeightInv r)
+--     (hbh : blackHeightLeft l = blackHeightLeft r) :
+--     ChildInv (baliR x l r) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
+--   sorry
 
 lemma rbInv_baliL_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) (hcl: ChildInv2 l)
     (hcr: ChildInv r) (hh: blackHeightLeft l = blackHeightLeft r) :
@@ -329,17 +329,10 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightIn
               obtain ⟨h1, h2, h3, h4⟩ := heq
               subst h1 h2 h3 h4
               let L := ins x left
-              constructor
-              · have h_ins_l_c2 : ChildInv2 L := by sorry
-                have h_ins_l_h : HeightInv L:= by sorry
-                have hH: blackHeightLeft L = blackHeightLeft right := by sorry
-                have h_baliL : (ChildInv (baliL data L right)) ∧
-                                 HeightInv (baliL data L right) ∧
-                                 blackHeightLeft (baliL data L right) = blackHeightLeft L + 1 :=
-                                 rbInv_baliL_of_rbInv L right h_ins_l_h hhr h_ins_l_c2 hcr hH
-                rcases h_baliL
-                aesop
-              · sorry
+              have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
+              have : ChildInv2 (ins x left) := by sorry --apply childInv2_of_childInv
+              have : (ins x left).blackHeightLeft = right.blackHeightLeft := by sorry
+              aesop
             · aesop
             · simp at heq
               obtain ⟨h1, h2, h3, h4⟩ := heq
