@@ -302,29 +302,29 @@ lemma rbInv_baliR_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) 
 
 
 lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightInv t) :
-     (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) := by
+    (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) := by
      induction t with
      | nil =>
-     simp_all only [childInv_nil, heightInv_nil, rootColor_nil, beq_self_eq_true, ↓reduceIte]
-     apply And.intro
-     · unfold ins; aesop
-     · unfold ins; aesop
+        simp_all only [childInv_nil, heightInv_nil, rootColor_nil, beq_self_eq_true, ↓reduceIte]
+        apply And.intro
+        · unfold ins; aesop
+        · unfold ins; aesop
      | node left data color right lih rih =>
-        constructor
-        · aesop
-          · unfold ins
-            split
-            · sorry
-            · sorry
-            · sorry
-          · simp[ChildInv2,paintColor]
-            split
-            · aesop
-            · next t left data c right t2 left2 data2 c2 right2 heq=>
-                aesop
-                · sorry
-                · sorry
-        · sorry
+        have hcl : ChildInv left := by aesop
+        have hhl : HeightInv left := by aesop
+        have hcr : ChildInv right := by aesop
+        have hhr : HeightInv right := by aesop
+        have hl := lih hcl hhl -- new ih for left
+        have hr := rih hcr hhr -- new ih for right
+        -- the goal contains an ∧ operator, but it seems like I cannot split it
+        -- baliL and baliR make their job especially during HeightInv
+        split
+        · next h =>-- big case 1: root color is black, ChildInv
+          sorry
+        · -- big case 2: root color is red, ChildInv2
+          sorry
+
+
 
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.insert x) ∧ HeightInv (t.insert x) := by
