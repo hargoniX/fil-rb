@@ -79,8 +79,8 @@ theorem red_of_not_black {c : Color} : c ≠ .black ↔ c = .red := by
 theorem black_of_not_red {c : Color} : c ≠ .red  ↔ c = .black := by
   cases c <;> simp_all
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 @[simp]
---omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem rootColor_black_of_not_red {t : Raw α}
     (h : ∀ (l : Raw α) (d : α) (r : Raw α), t = node l d .red r → False) :
     rootColor t = .black := by
@@ -278,8 +278,22 @@ theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
   unfold paintColor
   aesop
 
-lemma rbInv_baliL_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) (hcl: ChildInv2 l)
-    (hcr: ChildInv r) (hh: blackHeightLeft l = blackHeightLeft r) :
+-- theorem rbInv_baliL_of_rbInv {x : α} {l r : Raw α}
+--     (hcl : ChildInv2 l) (hcr : ChildInv r)
+--     (hhl : HeightInv l) (hhr : HeightInv r)
+--     (hbh : blackHeightLeft l = blackHeightLeft r) :
+--     ChildInv (baliL x l r) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
+--   sorry
+
+-- theorem rbInv_baliR_of_rbInv {x : α} {l r : Raw α}
+--     (hcl : ChildInv l) (hcr : ChildInv2 r)
+--     (hhl : HeightInv l) (hhr : HeightInv r)
+--     (hbh : blackHeightLeft l = blackHeightLeft r) :
+--     ChildInv (baliR x l r) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
+--   sorry
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+lemma rbInv_baliL_of_rbInv {x : α} {l r : Raw α} (hcl: ChildInv2 l) (hcr: ChildInv r) (hr : HeightInv l)
+    (hl : HeightInv r)(hh: blackHeightLeft l = blackHeightLeft r) :
     (ChildInv (baliL x l r)) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
     unfold baliL
     split
@@ -291,8 +305,9 @@ lemma rbInv_baliL_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) 
       · next _ _ _ _ color _ _ _ =>
         cases color <;> aesop
 
-lemma rbInv_baliR_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) (hcl: ChildInv l)
-    (hcr: ChildInv2 r) (hh: blackHeightLeft l = blackHeightLeft r) :
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+lemma rbInv_baliR_of_rbInv {x : α} {l r : Raw α} (hcl: ChildInv l) (hcr: ChildInv2 r) (hl : HeightInv l)
+    (hr : HeightInv r)(hh: blackHeightLeft l = blackHeightLeft r) :
     (ChildInv (baliR x l r)) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
     unfold baliR
     split
@@ -309,6 +324,7 @@ lemma rbInv_baliR_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) 
    The proof is very symmetric,
    keys of this proof are only to `unfold` and `split` at the right place
    and generate right hypothesis for `aesop` in order to do automation-/
+
 lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightInv t) :
     (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) ∧
     (ins x t).blackHeightLeft = t.blackHeightLeft:= by
