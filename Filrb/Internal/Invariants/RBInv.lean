@@ -79,8 +79,8 @@ theorem red_of_not_black {c : Color} : c ≠ .black ↔ c = .red := by
 theorem black_of_not_red {c : Color} : c ≠ .red  ↔ c = .black := by
   cases c <;> simp_all
 
-
-omit [Preorder α] [Ord α] [LawfulOrd α] in
+@[simp]
+--omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem rootColor_black_of_not_red {t : Raw α}
     (h : ∀ (l : Raw α) (d : α) (r : Raw α), t = node l d .red r → False) :
     rootColor t = .black := by
@@ -278,31 +278,40 @@ theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
   unfold paintColor
   aesop
 
--- theorem rbInv_baliL_of_rbInv {x : α} {l r : Raw α}
---     (hcl : ChildInv2 l) (hcr : ChildInv r)
---     (hhl : HeightInv l) (hhr : HeightInv r)
---     (hbh : blackHeightLeft l = blackHeightLeft r) :
---     ChildInv (baliL x l r) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
---   sorry
-
--- theorem rbInv_baliR_of_rbInv {x : α} {l r : Raw α}
---     (hcl : ChildInv l) (hcr : ChildInv2 r)
---     (hhl : HeightInv l) (hhr : HeightInv r)
---     (hbh : blackHeightLeft l = blackHeightLeft r) :
---     ChildInv (baliR x l r) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
---   sorry
-
 lemma rbInv_baliL_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) (hcl: ChildInv2 l)
     (hcr: ChildInv r) (hh: blackHeightLeft l = blackHeightLeft r) :
-    (ChildInv (baliL x l r)) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := sorry
+    (ChildInv (baliL x l r)) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
+    unfold baliL
+    split
+    · aesop
+    · aesop
+    · simp_all only [imp_false, childInv_black_node, and_true, heightInv_node, and_self, blackHeight_black_node]
+      cases l
+      · aesop
+      · next _ _ _ _ color _ _ _ =>
+        cases color <;> aesop
 
 lemma rbInv_baliR_of_rbInv (l r : Raw α) (hl : HeightInv l) (hr : HeightInv r) (hcl: ChildInv l)
     (hcr: ChildInv2 r) (hh: blackHeightLeft l = blackHeightLeft r) :
-    (ChildInv (baliR x l r)) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := sorry
+    (ChildInv (baliR x l r)) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
+    unfold baliR
+    split
+    · aesop
+    · aesop
+    · simp_all only [imp_false, childInv_black_node, true_and, heightInv_node, and_self, blackHeight_black_node,
+      and_true]
+      cases r
+      · aesop
+      · next _ _ _ _ color _ _ _ =>
+        cases color <;> aesop
 
-
+/- Proof of ins preserves the weaker invariant ChildInv2 and Heightinv.
+   The proof is very symmetric,
+   keys of this proof are only to `unfold` and `split` at the right place
+   and generate right hypothesis for `aesop` in order to do automation-/
 lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightInv t) :
-    (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) := by
+    (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) ∧
+    (ins x t).blackHeightLeft = t.blackHeightLeft:= by
      induction t with
      | nil =>
         simp_all only [childInv_nil, heightInv_nil, rootColor_nil, beq_self_eq_true, ↓reduceIte]
@@ -316,8 +325,6 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightIn
         have hhr : HeightInv right := by aesop
         have hl := lih hcl hhl -- new ih for left
         have hr := rih hcr hhr -- new ih for right
-        -- the goal contains an ∧ operator, but it seems like I cannot split it
-        -- baliL and baliR make their job especially during HeightInv
         split
         · next h => -- big case 1: root color is black, ChildInv
           unfold ins
@@ -330,23 +337,55 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightIn
               subst h1 h2 h3 h4
               let L := ins x left
               have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
-              have : ChildInv2 (ins x left) := by sorry --apply childInv2_of_childInv
-              have : (ins x left).blackHeightLeft = right.blackHeightLeft := by sorry
+              have : ChildInv2 (ins x left) := by
+                split at hl
+                · obtain ⟨a, _, _⟩ := hl
+                  apply childInv2_of_childInv; exact a
+                · obtain ⟨a, _, _⟩ := hl; exact a
               aesop
             · aesop
             · simp at heq
               obtain ⟨h1, h2, h3, h4⟩ := heq
               subst h1 h2 h3 h4
-              have L := ins x left
-              sorry
-          · split
-            · sorry
+              let R := ins x right
+              have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
+              have : ChildInv2 (ins x right) := by
+                split at hr
+                · obtain ⟨a, _, _⟩ := hr
+                  apply childInv2_of_childInv; exact a
+                · obtain ⟨a, _, _⟩ := hr; exact a
+              aesop
+          · split <;> aesop
+        · next h => -- big case 2: root color is red, ChildInv2
+          unfold ins
+          split
+          · aesop
+          · next t_1 left_1 data_1 right_1 heq =>
+            split
+            · simp at heq
+              obtain ⟨h1, h2, h3, h4⟩ := heq
+              subst h1 h2 h3 h4
+              let L := ins x left
+              have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
+              have : ChildInv2 (ins x left) := by
+                split at hl
+                · obtain ⟨a, _, _⟩ := hl
+                  apply childInv2_of_childInv; exact a
+                · obtain ⟨a, _, _⟩ := hl; exact a
+              aesop
             · aesop
-            · sorry
-        · -- big case 2: root color is red, ChildInv2
-          sorry
-
-
+            · simp at heq
+              obtain ⟨h1, h2, h3, h4⟩ := heq
+              subst h1 h2 h3 h4
+              let R := ins x right
+              have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
+              have : ChildInv2 (ins x right) := by
+                split at hr
+                · obtain ⟨a, _, _⟩ := hr
+                  apply childInv2_of_childInv; exact a
+                · obtain ⟨a, _, _⟩ := hr; exact a
+              aesop
+          · split <;> aesop
 
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.insert x) ∧ HeightInv (t.insert x) := by
