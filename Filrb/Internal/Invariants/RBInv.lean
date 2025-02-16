@@ -281,106 +281,97 @@ theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
    it tells that if no red-red conflict happens at the `left` subtree or `right` subtree,
    the `ChildInv2` can be upgraded as `ChildInv`-/
 omit [Preorder α] [Ord α] [LawfulOrd α] in
-lemma rbInv_baliL_of_rbInv {x : α} {l r : Raw α} (hcl: ChildInv2 l) (hcr: ChildInv r) (hr : HeightInv l)
-    (hl : HeightInv r)(hh: blackHeightLeft l = blackHeightLeft r) :
+lemma rbInv_baliL_of_rbInv {x : α} {l r : Raw α} (hcl : ChildInv2 l) (hcr : ChildInv r) (hr : HeightInv l)
+    (hl : HeightInv r) (hh : blackHeightLeft l = blackHeightLeft r) :
     (ChildInv (baliL x l r)) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
-    unfold baliL
-    split
+  unfold baliL
+  split
+  · aesop
+  · aesop
+  · cases l
     · aesop
-    · aesop
-    · simp_all only [imp_false, childInv_black_node, and_true, heightInv_node, and_self, blackHeight_black_node]
-      cases l
-      · aesop
-      · next _ _ _ _ color _ _ _ =>
-        cases color <;> aesop (add safe norm rootColor_black_of_not_red)
+    · next color _ _ _ =>
+      cases color <;> aesop (add safe norm rootColor_black_of_not_red)
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
-lemma rbInv_baliR_of_rbInv {x : α} {l r : Raw α} (hcl: ChildInv l) (hcr: ChildInv2 r) (hl : HeightInv l)
-    (hr : HeightInv r)(hh: blackHeightLeft l = blackHeightLeft r) :
+lemma rbInv_baliR_of_rbInv {x : α} {l r : Raw α} (hcl : ChildInv l) (hcr : ChildInv2 r) (hl : HeightInv l)
+    (hr : HeightInv r) (hh : blackHeightLeft l = blackHeightLeft r) :
     (ChildInv (baliR x l r)) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
-    unfold baliR
-    split
+  unfold baliR
+  split
+  · aesop
+  · aesop
+  · cases r
     · aesop
-    · aesop
-    · simp_all only [imp_false, childInv_black_node, true_and, heightInv_node, and_self, blackHeight_black_node]
-      cases r
-      · aesop
-      · next _ _ _ _ color _ _ _ =>
-        cases color <;> aesop (add safe norm rootColor_black_of_not_red)
+    · next color _ _ _ =>
+      cases color <;> aesop (add safe norm rootColor_black_of_not_red)
 
 /- Proof of ins preserves the weaker invariant ChildInv2 and Heightinv.
    The proof is very symmetric,
    keys of this proof are only to `unfold` and `split` at the right place
    and generate right hypothesis for `aesop` in order to do automation-/
 omit [Preorder α] [LawfulOrd α] in
-lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightInv t) :
+lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) ∧
     (ins x t).blackHeightLeft = t.blackHeightLeft := by
-     induction t with
-     | nil =>
-        simp_all only [childInv_nil, heightInv_nil, rootColor_nil, beq_self_eq_true, ↓reduceIte]
-        apply And.intro
-        · unfold ins; aesop
-        · unfold ins; aesop
-     | node left data color right lih rih =>
-        have hcl : ChildInv left := by aesop
-        have hhl : HeightInv left := by aesop
-        have hcr : ChildInv right := by aesop
-        have hhr : HeightInv right := by aesop
-        have hl := lih hcl hhl -- new ih for left
-        have hr := rih hcr hhr -- new ih for right
+  induction t with
+  | nil =>
+    simp_all only [childInv_nil, heightInv_nil, rootColor_nil, beq_self_eq_true, ↓reduceIte]
+    unfold ins
+    aesop
+  | node left data color right lih rih =>
+    have ⟨hcl, hcr⟩ := childInv_node hc
+    simp only [heightInv_node] at hh
+    have ⟨hhl, hhr, hbh⟩ := hh
+    split
+    · next h => -- big case 1: root color is black, ChildInv
+      unfold ins
+      split
+      · aesop
+      · rename_i heq
         split
-        · next h => -- big case 1: root color is black, ChildInv
-          unfold ins
-          split
-          · aesop
-          · rename_i heq
-            split
-            · simp at heq
-              obtain ⟨h1, h2, h3, h4⟩ := heq
-              subst h1 h2 h3 h4
-              let L := ins x left
-              have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
-              aesop (add safe norm childInv2_of_childInv)
-            · aesop
-            · simp at heq
-              obtain ⟨h1, h2, h3, h4⟩ := heq
-              subst h1 h2 h3 h4
-              let R := ins x right
-              have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
-              aesop (add safe norm childInv2_of_childInv)
-          · split <;> aesop
-        · next h => -- big case 2: root color is red, ChildInv2
-          unfold ins
-          split
-          · aesop
-          · rename_i heq
-            split
-            · simp at heq
-              obtain ⟨h1, h2, h3, h4⟩ := heq
-              subst h1 h2 h3 h4
-              let L := ins x left
-              have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
-              aesop (add safe norm childInv2_of_childInv)
-            · aesop
-            · simp at heq
-              obtain ⟨h1, h2, h3, h4⟩ := heq
-              subst h1 h2 h3 h4
-              let R := ins x right
-              have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
-              aesop (add safe norm childInv2_of_childInv)
-          · split <;> aesop
+        · simp at heq
+          obtain ⟨h1, h2, h3, h4⟩ := heq
+          subst h1 h2 h3 h4
+          have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
+          aesop (add safe norm childInv2_of_childInv)
+        · aesop
+        · simp at heq
+          obtain ⟨h1, h2, h3, h4⟩ := heq
+          subst h1 h2 h3 h4
+          have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
+          aesop (add safe norm childInv2_of_childInv)
+      · split <;> aesop
+    · next h =>  -- big case 2: root color is red, ChildInv2
+      unfold ins
+      split
+      · aesop
+      · rename_i heq
+        split
+        · simp at heq
+          obtain ⟨h1, h2, h3, h4⟩ := heq
+          subst h1 h2 h3 h4
+          let L := ins x left
+          have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
+          aesop (add safe norm childInv2_of_childInv)
+        · aesop
+        · simp at heq
+          obtain ⟨h1, h2, h3, h4⟩ := heq
+          subst h1 h2 h3 h4
+          let R := ins x right
+          have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
+          aesop (add safe norm childInv2_of_childInv)
+      · split <;> aesop
 
 omit [Preorder α] [LawfulOrd α] in
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.insert x) ∧ HeightInv (t.insert x) := by
-    simp[insert]
-    simp[paintColor]
-    split
-    · simp_all
-    · next t1 left data c right heq =>
-      have := rbInv_ins_of_rbInv x t hc hh
-      split at this <;> aesop
+  unfold insert
+  unfold paintColor
+  split
+  · simp_all
+  · have := rbInv_ins_of_rbInv x t hc hh
+    split at this <;> aesop
 
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem rbInv_baldL_of_rbInv {x : α} {l r t : Raw α}
