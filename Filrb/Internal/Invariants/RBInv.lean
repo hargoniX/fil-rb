@@ -278,7 +278,7 @@ theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
   aesop
 
 /- symmetric proof of `baliL`and `baliR`
-   it tells if no red-red conflict happens at the `left` subtree or `right` subtree,
+   it tells that if no red-red conflict happens at the `left` subtree or `right` subtree,
    the `ChildInv2` can be upgraded as `ChildInv`-/
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 lemma rbInv_baliL_of_rbInv {x : α} {l r : Raw α} (hcl: ChildInv2 l) (hcr: ChildInv r) (hr : HeightInv l)
@@ -302,8 +302,7 @@ lemma rbInv_baliR_of_rbInv {x : α} {l r : Raw α} (hcl: ChildInv l) (hcr: Child
     split
     · aesop
     · aesop
-    · simp_all only [imp_false, childInv_black_node, true_and, heightInv_node, and_self, blackHeight_black_node,
-      and_true]
+    · simp_all only [imp_false, childInv_black_node, true_and, heightInv_node, and_self, blackHeight_black_node]
       cases r
       · aesop
       · next _ _ _ _ color _ _ _ =>
@@ -335,61 +334,41 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc1 : ChildInv t) (hh : HeightIn
           unfold ins
           split
           · aesop
-          · next t_1 left_1 data_1 right_1 heq =>
+          · rename_i heq
             split
             · simp at heq
               obtain ⟨h1, h2, h3, h4⟩ := heq
               subst h1 h2 h3 h4
               let L := ins x left
               have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
-              have : ChildInv2 (ins x left) := by
-                split at hl
-                · obtain ⟨a, _, _⟩ := hl
-                  apply childInv2_of_childInv; exact a
-                · obtain ⟨a, _, _⟩ := hl; exact a
-              aesop
+              aesop (add safe norm childInv2_of_childInv)
             · aesop
             · simp at heq
               obtain ⟨h1, h2, h3, h4⟩ := heq
               subst h1 h2 h3 h4
               let R := ins x right
               have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
-              have : ChildInv2 (ins x right) := by
-                split at hr
-                · obtain ⟨a, _, _⟩ := hr
-                  apply childInv2_of_childInv; exact a
-                · obtain ⟨a, _, _⟩ := hr; exact a
-              aesop
+              aesop (add safe norm childInv2_of_childInv)
           · split <;> aesop
         · next h => -- big case 2: root color is red, ChildInv2
           unfold ins
           split
           · aesop
-          · next t_1 left_1 data_1 right_1 heq =>
+          · rename_i heq
             split
             · simp at heq
               obtain ⟨h1, h2, h3, h4⟩ := heq
               subst h1 h2 h3 h4
               let L := ins x left
               have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
-              have : ChildInv2 (ins x left) := by
-                split at hl
-                · obtain ⟨a, _, _⟩ := hl
-                  apply childInv2_of_childInv; exact a
-                · obtain ⟨a, _, _⟩ := hl; exact a
-              aesop
+              aesop (add safe norm childInv2_of_childInv)
             · aesop
             · simp at heq
               obtain ⟨h1, h2, h3, h4⟩ := heq
               subst h1 h2 h3 h4
               let R := ins x right
               have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
-              have : ChildInv2 (ins x right) := by
-                split at hr
-                · obtain ⟨a, _, _⟩ := hr
-                  apply childInv2_of_childInv; exact a
-                · obtain ⟨a, _, _⟩ := hr; exact a
-              aesop
+              aesop (add safe norm childInv2_of_childInv)
           · split <;> aesop
 
 omit [Preorder α] [LawfulOrd α] in
