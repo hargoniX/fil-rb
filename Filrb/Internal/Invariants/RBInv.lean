@@ -331,7 +331,7 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv
       split
       · aesop
       · rename_i heq
-        simp_all only [rootColor_node, node.injEq]
+        simp only [node.injEq] at heq
         obtain ⟨h1, h2, h3, h4⟩ := heq
         subst h1 h2 h3 h4
         have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
