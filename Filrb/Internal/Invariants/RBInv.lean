@@ -335,12 +335,9 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv
         simp at heq
         obtain ⟨h1, h2, h3, h4⟩ := heq
         subst h1 h2 h3 h4
-        split
-        · have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
-          aesop (add safe norm childInv2_of_childInv)
-        · aesop
-        · have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
-          aesop (add safe norm childInv2_of_childInv)
+        have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
+        have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
+        aesop (add safe norm childInv2_of_childInv)
       · split <;> aesop
     · aesop -- big case 2: root color is red, ChildInv2
 
