@@ -277,17 +277,19 @@ theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
   unfold paintColor
   aesop
 
-/- symmetric proof of `baliL`and `baliR`
-   it tells that if no red-red conflict happens at the `left` subtree or `right` subtree,
-   the `ChildInv2` can be upgraded as `ChildInv`-/
+/- symmetric proof of `baliL`and `baliR`.
+   It talks about color rebalancing and upgrade from ChildInv2 to ChildInv-/
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 lemma rbInv_baliL_of_rbInv {x : α} {l r : Raw α} (hcl : ChildInv2 l) (hcr : ChildInv r) (hr : HeightInv l)
     (hl : HeightInv r) (hh : blackHeightLeft l = blackHeightLeft r) :
     (ChildInv (baliL x l r)) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
   unfold baliL
   split
+  /- The first two cases: when red-red conflict happens at root,
+  baliL rebalance it as red-black or black-red, after that  ChildInv2 could be upgraded as ChildInv-/
   · aesop
   · aesop
+  /- The third case: when no red-red conflict happens, ChildInv2 could be upgraded as ChildInv-/
   · cases l
     · aesop
     · next color _ _ _ =>
@@ -307,9 +309,8 @@ lemma rbInv_baliR_of_rbInv {x : α} {l r : Raw α} (hcl : ChildInv l) (hcr : Chi
       cases color <;> aesop (add safe norm rootColor_black_of_not_red)
 
 /- Proof of ins preserves the weaker invariant ChildInv2 and Heightinv.
-   The proof is very symmetric,
-   keys of this proof are only to `unfold` and `split` at the right place
-   and generate right hypothesis for `aesop` in order to do automation-/
+   Keys of this proof are only to `unfold` and `split` at the right place (for case root color is black)
+   and generate *right and enough hypothesis* for `aesop` in order to do automation (for case root color is red)-/
 omit [Preorder α] [LawfulOrd α] in
 lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) ∧
@@ -323,45 +324,25 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv
     have ⟨hcl, hcr⟩ := childInv_node hc
     simp only [heightInv_node] at hh
     have ⟨hhl, hhr, hbh⟩ := hh
+    have := lih hcl hhl
+    have := rih hcr hhr
+    unfold ins
     split
     · next h => -- big case 1: root color is black, ChildInv
-      unfold ins
       split
       · aesop
       · rename_i heq
+        simp at heq
+        obtain ⟨h1, h2, h3, h4⟩ := heq
+        subst h1 h2 h3 h4
         split
-        · simp at heq
-          obtain ⟨h1, h2, h3, h4⟩ := heq
-          subst h1 h2 h3 h4
-          have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
+        · have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
           aesop (add safe norm childInv2_of_childInv)
         · aesop
-        · simp at heq
-          obtain ⟨h1, h2, h3, h4⟩ := heq
-          subst h1 h2 h3 h4
-          have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
+        · have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
           aesop (add safe norm childInv2_of_childInv)
       · split <;> aesop
-    · next h =>  -- big case 2: root color is red, ChildInv2
-      unfold ins
-      split
-      · aesop
-      · rename_i heq
-        split
-        · simp at heq
-          obtain ⟨h1, h2, h3, h4⟩ := heq
-          subst h1 h2 h3 h4
-          let L := ins x left
-          have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
-          aesop (add safe norm childInv2_of_childInv)
-        · aesop
-        · simp at heq
-          obtain ⟨h1, h2, h3, h4⟩ := heq
-          subst h1 h2 h3 h4
-          let R := ins x right
-          have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
-          aesop (add safe norm childInv2_of_childInv)
-      · split <;> aesop
+    · aesop -- big case 2: root color is red, ChildInv2
 
 omit [Preorder α] [LawfulOrd α] in
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
