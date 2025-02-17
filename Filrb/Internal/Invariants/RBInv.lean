@@ -317,7 +317,6 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv
     (ins x t).blackHeightLeft = t.blackHeightLeft := by
   induction t with
   | nil =>
-    simp_all only [childInv_nil, heightInv_nil, rootColor_nil, beq_self_eq_true, ↓reduceIte]
     unfold ins
     aesop
   | node left data color right lih rih =>
@@ -332,7 +331,7 @@ lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv
       split
       · aesop
       · rename_i heq
-        simp at heq
+        simp_all only [rootColor_node, node.injEq]
         obtain ⟨h1, h2, h3, h4⟩ := heq
         subst h1 h2 h3 h4
         have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
