@@ -79,7 +79,6 @@ theorem red_of_not_black {c : Color} : c ≠ .black ↔ c = .red := by
 theorem black_of_not_red {c : Color} : c ≠ .red  ↔ c = .black := by
   cases c <;> simp_all
 
-
 omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem rootColor_black_of_not_red {t : Raw α}
     (h : ∀ (l : Raw α) (d : α) (r : Raw α), t = node l d .red r → False) :
@@ -278,24 +277,80 @@ theorem heightInv_paintColor_independent {t : Raw α} {c : Color} :
   unfold paintColor
   aesop
 
-theorem rbInv_baliL_of_rbInv {x : α} {l r : Raw α}
-    (hcl : ChildInv2 l) (hcr : ChildInv r)
-    (hhl : HeightInv l) (hhr : HeightInv r)
-    (hbh : blackHeightLeft l = blackHeightLeft r) :
-    ChildInv (baliL x l r) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
-  sorry
+/- symmetric proof of `baliL`and `baliR`.
+   It talks about color rebalancing and upgrade from ChildInv2 to ChildInv-/
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+lemma rbInv_baliL_of_rbInv {x : α} {l r : Raw α} (hcl : ChildInv2 l) (hcr : ChildInv r) (hr : HeightInv l)
+    (hl : HeightInv r) (hh : blackHeightLeft l = blackHeightLeft r) :
+    (ChildInv (baliL x l r)) ∧ HeightInv (baliL x l r) ∧ blackHeightLeft (baliL x l r) = blackHeightLeft l + 1 := by
+  unfold baliL
+  split
+  /- The first two cases: when red-red conflict happens at root,
+  baliL rebalance it as red-black or black-red, after that  ChildInv2 could be upgraded as ChildInv-/
+  · aesop
+  · aesop
+  /- The third case: when no red-red conflict happens, ChildInv2 could be upgraded as ChildInv-/
+  · cases l
+    · aesop
+    · next color _ _ _ =>
+      cases color <;> aesop (add safe norm rootColor_black_of_not_red)
 
-theorem rbInv_baliR_of_rbInv {x : α} {l r : Raw α}
-    (hcl : ChildInv l) (hcr : ChildInv2 r)
-    (hhl : HeightInv l) (hhr : HeightInv r)
-    (hbh : blackHeightLeft l = blackHeightLeft r) :
-    ChildInv (baliR x l r) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
-  sorry
+omit [Preorder α] [Ord α] [LawfulOrd α] in
+lemma rbInv_baliR_of_rbInv {x : α} {l r : Raw α} (hcl : ChildInv l) (hcr : ChildInv2 r) (hl : HeightInv l)
+    (hr : HeightInv r) (hh : blackHeightLeft l = blackHeightLeft r) :
+    (ChildInv (baliR x l r)) ∧ HeightInv (baliR x l r) ∧ blackHeightLeft (baliR x l r) = blackHeightLeft l + 1 := by
+  unfold baliR
+  split
+  · aesop
+  · aesop
+  · cases r
+    · aesop
+    · next color _ _ _ =>
+      cases color <;> aesop (add safe norm rootColor_black_of_not_red)
 
+/- Proof of ins preserves the weaker invariant ChildInv2 and Heightinv.
+   Keys of this proof are only to `unfold` and `split` at the right place (for case root color is black)
+   and generate *right and enough hypothesis* for `aesop` in order to do automation (for case root color is red)-/
+omit [Preorder α] [LawfulOrd α] in
+lemma rbInv_ins_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
+    (if t.rootColor == .black then ChildInv (ins x t) else ChildInv2 (ins x t) ) ∧ (HeightInv (ins x t)) ∧
+    (ins x t).blackHeightLeft = t.blackHeightLeft := by
+  induction t with
+  | nil =>
+    unfold ins
+    aesop
+  | node left data color right lih rih =>
+    have ⟨hcl, hcr⟩ := childInv_node hc
+    simp only [heightInv_node] at hh
+    have ⟨hhl, hhr, hbh⟩ := hh
+    have := lih hcl hhl
+    have := rih hcr hhr
+    unfold ins
+    split
+    · next h => -- big case 1: root color is black, ChildInv
+      split
+      · aesop
+      · rename_i heq
+        simp only [node.injEq] at heq
+        obtain ⟨h1, h2, h3, h4⟩ := heq
+        subst h1 h2 h3 h4
+        have := rbInv_baliL_of_rbInv (x := data) (l := ins x left) (r := right)
+        have := rbInv_baliR_of_rbInv (x := data) (l := left) (r := ins x right)
+        aesop (add safe norm childInv2_of_childInv)
+      · split <;> aesop
+    · aesop -- big case 2: root color is red, ChildInv2
+
+omit [Preorder α] [LawfulOrd α] in
 theorem rbInv_insert_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.insert x) ∧ HeightInv (t.insert x) := by
-  sorry
+  unfold insert
+  unfold paintColor
+  split
+  · simp_all
+  · have := rbInv_ins_of_rbInv x t hc hh
+    split at this <;> aesop
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem rbInv_baldL_of_rbInv {x : α} {l r t : Raw α}
     (hcl2 : ChildInv2 l) (hcr : ChildInv r)
     (hhl : HeightInv l) (hhr : HeightInv r)
@@ -341,6 +396,7 @@ theorem rbInv_baldL_of_rbInv {x : α} {l r t : Raw α}
         simp [← hhr.right] at hbh
       | node => aesop
 
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem rbInv_baldR_of_rbInv {x : α} {l r t : Raw α}
     (hcl : ChildInv l) (hcr : ChildInv2 r)
     (hhl : HeightInv l) (hhr : HeightInv r)
@@ -395,6 +451,7 @@ theorem rbInv_baldR_of_rbInv {x : α} {l r t : Raw α}
 -- appendTrees is way simpler in its input/output relations.
 -- We know: appendTrees reduces the tree height if the node was black
 -- This is maybe not as precise as it could be, but it is enough for what we need it.
+omit [Preorder α] [Ord α] [LawfulOrd α] in
 theorem rbInv_appendTrees_of_rbInv {l r : Raw α}
     (hc : ChildInv (.node l d c r)) (hh : HeightInv (.node l d c r)) :
     (if c = .black then
@@ -461,6 +518,7 @@ theorem rbInv_appendTrees_of_rbInv {l r : Raw α}
     . simp_all
     . simp_all
 
+omit [Preorder α] [LawfulOrd α] in
 theorem rbInv_del_of_rbInv {t t' : Raw α}
     (hc : ChildInv t) (hh : HeightInv t) (heq : del x t = t') :
     (if t.rootColor = .black then
@@ -526,6 +584,7 @@ theorem rbInv_del_of_rbInv {t t' : Raw α}
     simp only [del, hord, rb, Bool.false_eq_true, ↓reduceIte] at heq ih
     cases r <;> aesop
 
+omit [Preorder α] [LawfulOrd α] in
 theorem rbInv_erase_of_rbInv (x : α) (t : Raw α) (hc : ChildInv t) (hh : HeightInv t) :
     ChildInv (t.erase x) ∧ HeightInv (t.erase x) := by
   rw [erase]
