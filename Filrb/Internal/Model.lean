@@ -266,8 +266,7 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder):
   · simp
   · split
     · rw [baliL_inorder_independent]
-      simp [inorder_node]
-      simp only [inorder_node, List.append_assoc, List.singleton_append] at h
+      simp_all only [inorder_node, List.append_assoc, List.singleton_append]
       have H1 := Sorted_append_cons_iff.mp h
       · rw [inorder_ins]
         · apply sortedInsert_left <;> aesop
@@ -282,7 +281,8 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder):
       simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_eq, inorder_node]
       subst heq
       apply sortedInsert_middle
-      aesop (add safe norm Sorted_append_cons_iff)
+      intro a a_1
+      simp_all only [Sorted_append_cons_iff]
       · have := Sorted_append_cons_iff.mp h
         aesop
       · rfl
@@ -313,7 +313,8 @@ lemma inorder_ins (x : α) (t : Raw α) (h : Sorted t.inorder):
       simp_all only [List.append_assoc, List.singleton_append, LawfulOrd.compare_eq_eq, inorder_node]
       subst heq
       apply sortedInsert_middle
-      aesop (add safe norm Sorted_append_cons_iff)
+      intro a a_1
+      simp_all only [Sorted_append_cons_iff]
       · have := Sorted_append_cons_iff.mp h
         aesop
       · rfl
