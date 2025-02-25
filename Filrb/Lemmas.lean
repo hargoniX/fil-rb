@@ -15,11 +15,13 @@ namespace Set
 variable [Preorder α] [Ord α] [LawfulOrd α]
 variable {set : Set α}
 
+omit [LawfulOrd α] in
 theorem height_le_log_size : set.height ≤ 2 * Nat.log 2 (set.size + 1) :=
   Internal.Raw.height_le_log_size set.hcolor set.hheight set.hroot
 
 open Filrb.Internal.Model
 
+omit [LawfulOrd α] in
 theorem emptyc_eq_empty : (∅ : Set α) = (empty : Set α) := by
   rfl
 
@@ -29,13 +31,16 @@ theorem contains_eq_decide_mem {x : α} : set.contains x = decide (x ∈ set) :=
 theorem contains_eq_false_iff_not_mem {x : α} : set.contains x = false ↔ ¬(x ∈ set) := by
   simp [← contains_eq_true_iff_mem]
 
+omit [LawfulOrd α] in
 theorem isEmpty_iff_eq_empty : isEmpty set ↔ set = empty := by
   simp_to_model using isEmpty_iff_eq_nil
 
+omit [LawfulOrd α] in
 @[simp]
 theorem isEmpty_empty : isEmpty (empty : Set α) = true := by
   simp [isEmpty_iff_eq_empty]
 
+omit [LawfulOrd α] in
 @[simp]
 theorem isEmpty_emptyc : isEmpty (∅ : Set α) = true := by
   simp [emptyc_eq_empty]
@@ -44,6 +49,7 @@ theorem isEmpty_emptyc : isEmpty (∅ : Set α) = true := by
 theorem isEmpty_insert {x : α} : isEmpty (set.insert x) = false := by
   simp_to_model using isEmpty_sortedInsert
 
+omit [LawfulOrd α] in
 @[simp]
 theorem not_mem_empty {x : α} : ¬(x ∈ (empty : Set α)) := by
   simp_to_model using List.not_mem_nil
@@ -52,6 +58,7 @@ theorem not_mem_empty {x : α} : ¬(x ∈ (empty : Set α)) := by
 theorem contains_empty {x : α} : contains (empty : Set α) x = false := by
   simp [contains_eq_false_iff_not_mem]
 
+omit [LawfulOrd α] in
 @[simp]
 theorem not_mem_emptyc {x : α} : ¬(x ∈ (∅ : Set α)) := by
   simp [emptyc_eq_empty]
@@ -60,6 +67,7 @@ theorem not_mem_emptyc {x : α} : ¬(x ∈ (∅ : Set α)) := by
 theorem contains_emptyc {x : α} : contains (∅ : Set α) x = false := by
   simp [emptyc_eq_empty]
 
+omit [LawfulOrd α] in
 theorem not_mem_of_isEmpty {a : α} : set.isEmpty → ¬a ∈ set := by
   intro h
   simp_all [isEmpty_iff_eq_empty]
@@ -68,6 +76,7 @@ theorem contains_of_isEmpty {a : α} : set.isEmpty → set.contains a = false :=
   rw [contains_eq_false_iff_not_mem]
   apply not_mem_of_isEmpty
 
+omit [LawfulOrd α] in
 theorem isEmpty_eq_false_iff_exists_mem : set.isEmpty = false ↔ ∃ a, a ∈ set := by
   simp_to_model
   simp [← List.isEmpty_eq_false_iff_exists_mem]
@@ -76,6 +85,7 @@ theorem isEmpty_eq_false_iff_exists_contains_eq_true :
     set.isEmpty = false ↔ ∃ a, set.contains a = true := by
   simp [contains_eq_true_iff_mem, isEmpty_eq_false_iff_exists_mem]
 
+omit [LawfulOrd α] in
 theorem isEmpty_iff_forall_not_mem : set.isEmpty = true ↔ ∀ a, ¬a ∈ set := by
   constructor
   · intro h1 x
@@ -112,14 +122,17 @@ theorem contains_insert_self {k : α} : (set.insert k).contains k := by
 theorem mem_insert_self {k : α} : k ∈ set.insert k := by
   simp
 
+omit [LawfulOrd α] in
 @[simp]
 theorem size_empty : (empty : Set α).size = 0 := by
   simp_to_model using List.length_nil
 
+omit [LawfulOrd α] in
 @[simp]
 theorem size_emptyc : (∅ : Set α).size = 0 := by
   simp [emptyc_eq_empty]
 
+omit [LawfulOrd α] in
 theorem isEmpty_eq_size_eq_zero : set.isEmpty = (set.size == 0) := by
   simp_to_model using isEmpty_eq_length_eq_zero
 

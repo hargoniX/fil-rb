@@ -13,7 +13,7 @@ The `Set` container implemented as the `Internal.Raw` red black tree together wi
 invariants. Due to Lean's FFI representation this has the same memory layout as just using
 `Internal.Raw` directly so we don't pay anything for this abstraction.
 -/
-structure Set (α : Type u) [Preorder α] [Ord α] [LawfulOrd α] where
+structure Set (α : Type u) [Preorder α] [Ord α] where
   raw : Internal.Raw α
   hbst: Internal.Raw.BST raw
   hcolor : Internal.Raw.ChildInv raw

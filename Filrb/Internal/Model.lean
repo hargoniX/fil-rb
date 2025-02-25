@@ -602,9 +602,11 @@ namespace Model
 @[inline]
 def inorder (set : Set α) : List α := set.raw.inorder
 
+omit [LawfulOrd α] in
 theorem inorder_sorted {t : Set α} : Sorted (inorder t) :=
   bst_iff_sorted_inorder.mp t.hbst
 
+omit [LawfulOrd α] in
 @[simp]
 theorem inorder_empty : inorder (.empty : Set α) = [] :=
   Raw.inorder_nil
@@ -617,22 +619,27 @@ theorem inorder_erase_eq_erase_inorder {t : Set α} (x : α) :
     inorder (t.erase x) = sortedErase (inorder t) x :=
   Raw.Model.inorder_erase_eq_erase_inorder x inorder_sorted
 
+omit [LawfulOrd α] in
 theorem mem_iff_mem {t : Set α} (x : α) : x ∈ t ↔ x ∈ (inorder t) :=
   Raw.Model.mem_iff_mem x
 
 theorem contains_iff_contains {t : Set α} (x : α) : t.contains x = (inorder t).contains x :=
   Raw.Model.contains_iff_contains x inorder_sorted
 
+omit [LawfulOrd α] in
 theorem isEmpty_eq_isEmpty {t : Set α} : t.isEmpty = (inorder t).isEmpty :=
   Raw.Model.isEmpty_eq_isEmpty
 
+omit [LawfulOrd α] in
 theorem size_eq_length {t : Set α} : t.size = (inorder t).length :=
   Raw.Model.size_eq_length
 
+omit [LawfulOrd α] in
 theorem eq_empty_iff_empty {t : Set α} : (t = .empty) ↔ (inorder t) = [] := by
   cases t
   simp [Set.empty, inorder, Raw.Model.eq_nil_iff_nil]
 
+omit [LawfulOrd α] in
 theorem empty_eq_iff_empty {t : Set α} : (.empty = t) ↔ (inorder t) = [] := by
   cases t
   simp [Set.empty, inorder, Raw.Model.nil_eq_iff_nil]
@@ -652,9 +659,11 @@ scoped macro_rules
     $[apply $(using?.toArray):term];*
   )
 
+omit [LawfulOrd α] in
 theorem isEmpty_iff_eq_nil {t : Set α} : (inorder t).isEmpty ↔ (inorder t) = [] :=
   Raw.Model.isEmpty_iff_eq_nil
 
+omit [LawfulOrd α] in
 theorem isEmpty_sortedInsert {t : Set α} {k : α} : (sortedInsert (inorder t) k).isEmpty = false :=
   Raw.Model.isEmpty_sortedInsert inorder_sorted
 
@@ -674,6 +683,7 @@ theorem length_sortedErase {t : Set α} (k : α) :
     (sortedErase (inorder t) k).length = if k ∈ (inorder t) then (inorder t).length - 1 else (inorder t).length :=
   Raw.Model.length_sortedErase k
 
+omit [LawfulOrd α] in
 theorem isEmpty_eq_length_eq_zero {t : Set α} : (inorder t).isEmpty = ((inorder t).length == 0) :=
   Raw.Model.isEmpty_eq_length_eq_zero
 
