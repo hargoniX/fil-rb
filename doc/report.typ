@@ -64,8 +64,8 @@ as the original type #footnote[https://lean-lang.org/lean4/doc/dev/ffi.html#tran
 Because this subtype is always known to be a valid binary search tree we can relate operations on
 it to operations on its inorder representation as a list as seen in @nipkowtrees. To do this we must
 provide:
-1. For each proposition on the tree a lemma that transport the proposition to a proposition about
-   lists, for example for membership: `x ∈ t ↔ x ∈ t.inorder`
+1. For each proposition on the tree a lemma that translates the proposition to a proposition about
+   sorted lists, for example for membership: `x ∈ t ↔ x ∈ t.inorder`
 2. For every operation on the tree a lemma that explains what happens when `inorder` is applied
    to the result of the operation, for example for inserting an element: `inorder (t.insert x) = sortedInsert (inorder t) x`
 
@@ -75,33 +75,30 @@ As these propositions are usually provable much easier than ones about red black
 it becomes much easier to both build the initial surface level API but also extend on it later on
 if necessary.
 
-Now that we have all tools to make proofs about the behavior of red black tree operations easy the
-key question is what lemmas we need to prove in order to make sure that users have to never break
-through this API. To determine this we use the API design approach by the Lean standard library
-team which considers how any operation interacts with any other operation in the surface level API,
-leaving us with at worst a quadratic amount of lemmas.
+Now that we have all tools to make proofs about the behavior of red black tree operations easy, the
+key question is what lemmas we need to prove in order to provide a complete API for users of our
+library. To determine this we use the API design approach by the Lean standard library
+team which considers how any operation that produces a new tree (`insert`, `erase` etc.) interacts
+with any operation that produces an output based on a tree (`size`, `contains` etc.). This leaves us
+with a lemma coverage as seen in TODO table, all of which are proven either from each other or by
+`simp_to_model` and induction over sorted lists.
 
-TODO: more details
+= Performance <performance>
+TODO:
+- mention that we proved the lemma about height boundedness
+- Some performance measurements against C++ `std::map`.
 
-Explain how we came up with the high level lemmas that are proved
-(by looking at all combinations of every pair of operations and determining whether there should be a lemma for it or not).
-
-Membership, Inorder
-
-= Evaluation <evaluation>
-Some performance measurements against C++ `std::map`.
-Unclear if we want to compare with the sad coq benchmark script.
 
 = Conclusion <conclusion>
-Optional
+In summary we provide a reasonably efficient red black tree implementation that very likely has
+enough proof API such that no user should ever need to peek below it. Beyond usability this has the added
+benefit that we can almost arbitrarily refactor the internals without breaking user code as long as
+the lemmas we provide keep holding.
 
-= Future Work <futurework>
-Note that for this project we limited ourselves to just sets as red black trees but this could be
-extended to maps or dependent maps as has been shown in the Lean standard library for both hash
-and tree based containers.
+While we limited ourselves to just sets as red black trees, the above approach can be extended to
+maps or dependent maps as has been shown in the Lean standard library for both hash and tree based
+containers. Beyond this we can add more operations such as `min?`, `max?`, `ForIn` etc. very easily
+by repeating the design process for that single operation.
 
-
-- Integration of further operations
-- extending to rbmap and dependent rbmaps
 
 #bibliography("references.bib", title: [References])
