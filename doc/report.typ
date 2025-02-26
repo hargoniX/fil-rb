@@ -7,7 +7,7 @@
 #show : official.with(
   title: [
     Design Report:#linebreak()
-    Formalization of Red-Black Trees in Lean4 #linebreak()
+    Formalization of Red-Black Trees in Lean 4 #linebreak()
   ],
   author: [Daniel Soukup, Henrik Böving, Linyin Luo],
   thesis-type: "Master Praktikum: Formalization in Lean",
@@ -78,19 +78,72 @@ if necessary.
 Now that we have all tools to make proofs about the behavior of red black tree operations easy, the
 key question is what lemmas we need to prove in order to provide a complete API for users of our
 library. To determine this we use the API design approach by the Lean standard library
-team which considers how any operation that produces a new tree (`insert`, `erase` etc.) interacts
-with any operation that produces an output based on a tree (`size`, `contains` etc.). This leaves us
-with a lemma coverage as seen in TODO table, all of which are proven either from each other or by
-`simp_to_model` and induction over sorted lists.
+team which considers how any operation in the API interacts with any operation any other operation
+and provides one or more lemmas for that interaction. This leaves us with a lemma coverage as seen
+in @api-lemmas, all of which are proven either from each other or by `simp_to_model` and induction
+over sorted lists.
+
+#let check = table.cell(
+  fill: green.lighten(60%),
+)[#sym.checkmark]
+
+#let na = table.cell(
+  fill: gray.lighten(60%),
+)[N/A]
+
+#let gen = table.cell(
+  fill: green.lighten(60%),
+)[Gen]
+
+#figure(
+  table(
+    columns: 8,
+    table.header(
+      [], [`empty`], [`insert`], [`erase`], [`isEmpty`], [`mem`], [`contains`], [`size`]
+    ),
+    [`empty`], na, gen, gen, check, check, check, check,
+    [`insert`], gen, gen, gen, check, check, check, check,
+    [`erase`], gen, gen, gen, check, check, check, check,
+    [`isEmpty`], check, check, check, na, check, check, check,
+    [`mem`], check, check, check, check, na, check, check,
+    [`contains`], check, check, check, check, check, na, check,
+    [`size`], check, check, check, check, check, check, na
+  ),
+  caption: [API Lemma Coverage, Gen(aralized) means provable via `simp` from others],
+) <api-lemmas>
+
 
 = Performance <performance>
-TODO:
-- mention that we proved the lemma about height boundedness
-- Some performance measurements against C++ `std::map`.
+As a last step in the design of our library we want to ensure that it has reasonable performance
+characteristics. Towards this we provide both theoretical and experimental evidence. For one we have a
+proof, based on the invariants from @invariants., that the height of any of our red black trees $t$
+is bounded above by $2 dot log_2(abs(t) + 1)$. This bound gives us high confidence that the
+invariants we defined are meaningful and that the operations have good asymptotic behavior.
+
+Beyond this theoretical evidence we also performed an experimental evaluation against `std::map` from
+the C++ standard library which is often implemented as a red black tree as well. This evaluation was
+performed on a 13th Gen Intel(R) Core(TM) i7-1360P CPU using Clang 19.1.7. We tested both insertion
+and lookup of sequential and randomly generated elements, the results can be seen in
+@perf-data. While Lean does pay an overhead compared to C++ we believe this to be reasonable for
+most use cases in Lean. Furthermore, just like many other data structures defined using `inductive`
+in Lean, our red black tree may be used as an efficient persistent data structure which `std::map`
+may not.
+
+#figure(
+  grid(
+    columns: (auto, auto),
+    rows: (auto, auto),
+    image("figures/sequential_insert.svg"),
+    image("figures/sequential_search.svg"),
+    image("figures/random_insert.svg"),
+    image("figures/random_search.svg"),
+  ),
+  caption: [Performance Evaluation vs C++ `std::map`]
+) <perf-data>
 
 
 = Conclusion <conclusion>
-In summary we provide a reasonably efficient red black tree implementation that very likely has
+In summary we provide a reasonably efficient red black tree implementation that likely has
 enough proof API such that no user should ever need to peek below it. Beyond usability this has the added
 benefit that we can almost arbitrarily refactor the internals without breaking user code as long as
 the lemmas we provide keep holding.

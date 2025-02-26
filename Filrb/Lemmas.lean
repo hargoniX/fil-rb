@@ -187,6 +187,20 @@ theorem size_le_size_erase {k : α} : set.size ≤ (set.erase k).size + 1 := by
   rw [size_erase]
   split <;> omega
 
+omit [LawfulOrd α] in
+theorem size_eq_zero_iff_not_mem : set.size = 0 ↔ ∀ x, ¬(x ∈ set) := by
+  simp [← isEmpty_iff_forall_not_mem, isEmpty_eq_size_eq_zero]
+
+theorem size_eq_zero_iff_not_contains : set.size = 0 ↔ ∀ x, set.contains x = false := by
+  simp [size_eq_zero_iff_not_mem, contains_eq_false_iff_not_mem]
+
+omit [LawfulOrd α] in
+theorem size_ne_zero_iff_exists_mem : set.size ≠ 0 ↔ ∃ x, x ∈ set := by
+  simp [← isEmpty_eq_false_iff_exists_mem, isEmpty_eq_size_eq_zero]
+
+theorem size_ne_zero_iff_exists_contains : set.size ≠ 0 ↔ ∃ x, set.contains x = true := by
+  simp [size_ne_zero_iff_exists_mem, contains_eq_true_iff_mem]
+
 end Set
 
 end Filrb
