@@ -96,7 +96,7 @@ The most basic operations for any datastructure are `insert`, `erase` and `conta
 Defining Containment for any binary search tree is a very simple recursive function.
 
 Insertion is an adaption of #cite(<nipkowFDSA>, form: "prose") to Lean4,
-which is mostly #cite(<okasaki>, form: "prose") simple, functional approach to balancing.
+which is mostly #cite(<Okasaki1999>, form: "prose") simple, functional approach to balancing.
 
 Deletion is defined by Nipkow with the help of the partial function `split_min`.
 It enables us to find the best-suited subtree to replace the node we want to remove from the tree.
