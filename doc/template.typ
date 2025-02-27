@@ -9,6 +9,7 @@
 #let lmu_cyan = rgb("#009FE3")
 #let lmu_orange = rgb("#ff8c00")
 #let lmu_green = rgb("#00883A")
+#let lmu_red = red
 
 // ctheorems
 #let theorem = thmbox(
@@ -35,7 +36,6 @@
 ) = {
   set align(center)
   // Institution
-  v(5%)
   text(14pt, smallcaps("Ludwig-Maximilians-Universität München"))
   linebreak()
   text(14pt, smallcaps("Chair of theoretical Computer Science and Theorem Proving"))
@@ -63,7 +63,6 @@
     "Submission date:", [#submission_date],
   )
   v(5%)
-  pagebreak()
 }
 
 #let official(
@@ -101,7 +100,7 @@
     submission_date: submission_date,
     paper-size: paper-size
   )
-  outline(depth: 3, indent: true)
+  outline(depth: 3)
   pagebreak()
 
   // Main Matter

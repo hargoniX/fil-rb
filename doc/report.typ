@@ -1,6 +1,7 @@
 #import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
 #import "@preview/codelst:2.0.0": sourcecode
 #import "@preview/curryst:0.1.1"
+#import "@preview/wordometer:0.1.4": word-count, total-characters
 #import "template.typ": *
 
 #let target_date = datetime(year: 2025, month: 3, day: 3)
@@ -15,7 +16,18 @@
   submission_date: target_date.display("[month repr:long] [day], [year]"),
 )
 
+#show: word-count.with(exclude: (strike, raw, <no-wc>))
 #show figure.caption : set text(10pt)
+
+#show raw.where(lang: "lean"): r => {
+  show "inductive": set text(lmu_red)
+  show "where": set text(lmu_red)
+  show "|": set text(lmu_red)
+  show "Type": set text(lmu_orange)
+  show "Raw": set text(agda_green)
+  show "Color": set text(agda_green)
+  r
+}
 
 = Introduction <introduction>
 Briefly talk about rbtrees and that/how they are useful for functional programming, cite:
@@ -153,5 +165,6 @@ maps or dependent maps as has been shown in the Lean standard library for both h
 containers. Beyond this we can add more operations such as `min?`, `max?`, `ForIn` etc. very easily
 by repeating the design process for that single operation.
 
+#[Total characters: #total-characters (titlepage, code and this line excluded)] <no-wc>
 
 #bibliography("references.bib", title: [References])
