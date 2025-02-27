@@ -10,7 +10,7 @@
     Design Report:#linebreak()
     Formalization of Red-Black Trees in Lean 4 #linebreak()
   ],
-  author: [Daniel Soukup, Henrik Böving, Linyin Luo],
+  author: [Daniel Soukup, Henrik Böving, Lingyin Luo],
   thesis-type: "Master Praktikum: Formalization in Lean",
   supervisor: [Xavier Généreux],
   submission_date: target_date.display("[month repr:long] [day], [year]"),
@@ -30,9 +30,15 @@
 }
 
 = Introduction <introduction>
-Briefly talk about rbtrees and that/how they are useful for functional programming, cite:
-- the original rbtree paper
-- some publication by okasaki where he points this out
+Red-Black Tree (RbTree) is a kind of self-balancing binary search trees with time complexity of $O(log(n))$. Its efficiency comes from balance maintaning via color properties and rotations. Otherwise the performace will degenerate to  $O(n)$ as a linked list in worst case. Since its first introduction by Guibas and Sedegewick@rbtOriginal, RbTree has been widely used in computer science where efficient ordered data storage and retrieval are needed, e.g. in the standard library implementation in different programming languages (`std::map` from C++, `TreeMap` from Java Collections Framework) and in the virtual memory management by operating systems (`mm_struct` in Linux kernel).
+
+Besides Guibas and Sedgewick, Okasaki has fistly come up with an functional version of RbTree insertion algorithm, which is implementated simply and compactly in Haskell@Okasaki1999. Unlike an imperative implementation of RbTree which need to deal with detailed opeations on the tree structure, the functional implementation rather focuses on the description of the invariants which are crucial to balancing. They are: 
+- Color Invariant: No red node has a red parent. The root color and the empty RbTree are considered as black.
+- Height Invariant: Every path from the root to an empty node contains the same number
+of black nodes.
+
+In this report, we follow the method from Nipkow et al.(2024)@fdc to build our formalization of RbTree in Lean4. We provide a verified implementation of RbTree and a general framework to prove properties about opeations on RbTree. Furthermore, we also show that our implementation has close performance compared with C++ `std::map`.
+
 
 = RbTree Framework <framework>
 The goal of our formalization is to provide an implementation of sets as red black trees with a complete
