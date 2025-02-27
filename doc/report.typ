@@ -32,13 +32,13 @@ Red-Black Tree (RbTree) is a self-balancing binary search
 tree with time complexity of $O(log(n))$.
 This performance is ensured by balance maintaining
 via color properties and rotations.
-Without balancing, it will degenerate to $O(n)$ as a linked list in worst case.
+Without balancing, it will degenerate to $O(n)$ as a linked list in the worst case.
 
 Since its first introduction by Guibas and Sedegewick@rbtOriginal,
 RbTree has been widely used in computer science where efficient ordered data storage and retrieval are needed,
 e.g. in the standard library implementation in different programming languages
 (`std::map` from C++, `TreeMap` from Java Collections Framework)
-and in the virtual memory management in operating systems (`mm_struct` in Linux kernel).
+and in the virtual memory management in operating systems (`mm_struct` in the Linux kernel).
 
 Besides Guibas and Sedgewick,
 Okasaki has firstly come up with an functional version of RbTree insertion algorithm,
