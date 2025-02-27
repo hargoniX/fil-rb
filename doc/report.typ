@@ -24,8 +24,6 @@
   show "where": set text(lmu_red)
   show "|": set text(lmu_red)
   show "Type": set text(lmu_orange)
-  show "Raw": set text(agda_green)
-  show "Color": set text(agda_green)
   r
 }
 
@@ -68,15 +66,46 @@ red black trees from @nipkowtrees. Our design takes the following steps:
 3. Connect red black trees to a model of sorted lists and use this model to verify the surface level
    API of the tree in @surface.
 
-== Raw RbTree Defintion <raw>
-We have a raw rbtree definition with the following operations onto it:
-- `erase`
-- `insert`
-- explain `baliL/R`, `baldL/R` and `appendTrees` and what they fix on traversal?
-- most importantly `toGraphviz`!
+== Raw RbTree Defintions <raw>
+For the underlying RbTree constructor, we chose the following definition:
+```lean
+inductive Raw (α : Type u) where
+  | nil : Raw α
+  | node (left : Raw α) (data : α) (color : Color) (right : Raw α) : Raw α
+```
+where `Color` is an inductive type of either `black` or `red`, which enables Lean to encode it as just an 8 bit integer stored within the node.
 
-Explain, why we chose that definition for rbtree.
-The explanation is mostly in the doc string of Raw.lean, cite FBIP here.
+In addition, this definition is specifically geared towards _functional but in-place_ (FBIP) usage.
+To showcase this, let us consider some alternative ways to define it:
+
+1. #cite(<nipkowFDSA>, form: "prose") defines a RbTree by a tuple of a normal tree and a color.
+   ```coq
+   datatype 'a tree = Leaf | Node ('a tree) 'a ('a tree)
+   type_synonym 'a rbt = ('a × color) tree
+   ```
+   This introduces the overhead of an additional pointer indirection.
+
+2. Directly encode the color in different tree constructors.\
+   This will destroy FBIP as the implementation within Lean only reuses memory across the same constructor for destructive updates @immutablebean.
+   Thus, recoloring a node after an operation would not fall under FBIP.
+
+We believe our approach to be an acceptable overhead compared to calling the allocator more often than necessary.
+
+The most basic operations for any datastructure are `insert`, `erase` and `contains`.
+// TODO: do we want to explain `baliL/R`, `baldL/R` and what they fix on traversal?
+Defining Containment for any binary search tree is a very simple recursive function.
+
+Insertion is an adaption of #cite(<nipkowFDSA>, form: "prose") to Lean4,
+which is mostly #cite(<okasaki>, form: "prose") simple, functional approach to balancing.
+
+Deletion is defined by Nipkow with the help of the partial function `split_min`.
+It enables us to find the best-suited subtree to replace the node we want to remove from the tree.
+This is a rather involved routine with lots of control branches.
+Instead, we adapted deletion from the `RBMap` defined in the Lean4 Core Repository @leancorelib to our simpler Tree.
+They make use of the function `appendTrees`,
+which is a recursive definition to combine the right-most subtree of the left subtree with the left-most subtree of the right subtree,
+while also correcting the colors.
+This seemed more straightforward to reason about, so we choose to copy that one.
 
 === Invariants <invariants>
 Explain that these operations fulfill:
