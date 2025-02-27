@@ -52,7 +52,7 @@ They are:
 - Height Invariant: Every path from the root to an empty node contains the same number of black nodes.
 
 In this report, we follow the method from Nipkow et al.(2024)@nipkowFDSA to build our formalization of RbTree in Lean4.
-We provide a verified implementation of RbTree and a general framework to prove properties about opeations on RbTree.
+We provide a verified implementation of RbTree and a general framework to prove properties about operations on RbTree.
 Furthermore, we also show that our implementation has close performance compared with C++ `std::map`.
 
 
