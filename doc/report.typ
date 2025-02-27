@@ -42,7 +42,7 @@ and in the virtual memory management in operating systems (`mm_struct` in the Li
 
 Besides Guibas and Sedgewick,
 Okasaki has firstly come up with an functional version of RbTree insertion algorithm,
-which is implementated simply and elegantly in Haskell@Okasaki1999.
+which is implemented simply and elegantly in Haskell@Okasaki1999.
 Unlike an imperative implementation of RbTree 
 which handles detailed operations on the tree structure,
 the functional version focuses on enforcing the invariants, 
