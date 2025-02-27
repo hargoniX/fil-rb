@@ -16,7 +16,7 @@
   submission_date: target_date.display("[month repr:long] [day], [year]"),
 )
 
-#show: word-count.with(exclude: (strike, raw, <no-wc>))
+#show: word-count.with(exclude: (strike, raw.where(block: true), <no-wc>))
 #show figure.caption : set text(10pt)
 
 #show raw.where(lang: "lean"): r => {
@@ -92,9 +92,9 @@ To showcase this, let us consider some alternative ways to define it:
 We believe our approach to be an acceptable overhead compared to calling the allocator more often than necessary.
 
 The most basic operations for any datastructure are `insert`, `erase` and `contains`.
-// TODO: do we want to explain `baliL/R`, `baldL/R` and what they fix on traversal?
 Defining Containment for any binary search tree is a very simple recursive function.
 
+// TODO: do we want to explain how balancing works and how they operate on traversal?
 Insertion is an adaption of #cite(<nipkowFDSA>, form: "prose") to Lean4,
 which is mostly #cite(<Okasaki1999>, form: "prose") simple, functional approach to balancing.
 
@@ -107,15 +107,63 @@ which is a recursive definition to combine the right-most subtree of the left su
 while also correcting the colors.
 This seemed more straightforward to reason about, so we choose to copy that one.
 
-=== Invariants <invariants>
-Explain that these operations fulfill:
-- Red-Black Invariant: used to prove a height upper bound which implies $O(log(n))$ performance characteristica
-- BST invariant: used for further verification (especially for the model)
+== Invariants <invariants>
+A RbTree differentiates itself from a normal binary search tree through two major invariants:
 
-Explain the general approach to proofs by decomposition mixed with simp and aesop.
-We should cite aesop here.
+1. `ChildInv`: Every red node has only black children, where all leaves are considered black.
+2. `HeightInv`: Every path from a given node to any of its leaves goes through the same number of black nodes.
 
-Explain some considerations we had in mind for our simp set.
+The combination of those two allows us to prove a height upper bound which implies $O(log(n))$ performance characteristica.
+Thus our job is to show that the empty RbTree and any operation on a RbTree uphold those invariants.
+
+We followed the approach layed out by #cite(<nipkowFDSA>, form: "prose"),
+where he introduces two tricks to ideas to prove these invariants.
+
+First, he describes a weaker child invariant for RbTrees,
+where only the childs of a node have to preserve the invariant.
+```lean
+def ChildInv2 (t : Raw α) : Prop :=
+  ChildInv (paintColor .black t)
+```
+Since a lot of the operations paint the root of the tree afterwards black,
+it is easier to show `ChildInv2` and then upgrade it to `ChildInv` when required.
+
+Secondly, Nipkow introduces a sufficient condition for the `HeightInv`:
+```lean
+inductive HeightInv : Raw α → Prop where
+  | nil : HeightInv .nil
+  | node (hleft : HeightInv left) (hright : HeightInv right)
+         (h : left.blackHeightLeft = right.blackHeightLeft) :
+         HeightInv (.node left data color right)
+```
+`blackHeightLeft` recursively traverses only the left subtree, and increments if the node is black.
+Since `HeightInv` traverses the complete tree we can still reach conclusions about all paths from the root,
+but this allows us to easier reason about the recursive case.
+
+To prove that `insert` and `erase` preserve a combination of these invariants,
+we decomposed the theorem into lemmas about how the underlying functions preserve the invariants.
+
+// Explain some considerations we had in mind for our simp set.
+This decomposition profits a lot from a strong `simp` set,
+where - beside the trivial properties about every function - we mostly tried to reduce the different functions to common terms,
+s.t. the proof automation - in this case `aesop` @aesop - can reason with the context about the goals.
+
+Since these functions have a lot of cases, it becomes quite repetitive to prove these subgoals without automation.
+So our development loop mostly consisted out of understanding what the different branches were failing to prove automaticly
+and to implement these either as `simp` or `aesop`-specific theorem.
+But some properties are easier deconstructed than others.
+Both of the RbTree-specific invariants are dependant on the color of the node, which is not the most obvious choice for `aesop` to casesplit on.
+Also, there are code paths, where the invariants depend on each other,
+e.g. where we can deduce that a node is `red` since we know it is not a `black` node and due to `HeightInv` it also cannot be nil.
+These cases obviously require much more manual reasoning and a deeper understanding on the balance operation.
+
+Finally, it is essential for the next chapter to prove that operations on a RbTree preserve the `BST`-invariant,
+therefore letting us know that `inorder` results in a sorted list.
+In comparison to the other invariants, the `BST`-invariant is more straightforward to decompose since there is no branching over the colors.
+Therefore the same decomposition mechanism combined with reasonable `aesop`-calls
+are able to handle most of the proofs besides some transitivity.
+Since this invariant was the easiest to automate and also the easiest way to show that our RbTree-implementation has no bad code path,
+we focused on this as our first major goal.
 
 == Surface Level API <surface>
 After providing the basic operations and verifying that they preserve the invariants we can pack
@@ -216,6 +264,6 @@ maps or dependent maps as has been shown in the Lean standard library for both h
 containers. Beyond this we can add more operations such as `min?`, `max?`, `ForIn` etc. very easily
 by repeating the design process for that single operation.
 
-#[Total characters: #total-characters (titlepage, code and this line excluded)] <no-wc>
+#[#ctext([*DELETE THIS BEFORE SUBMITTING*], red): Total characters: #total-characters (titlepage, code and this line excluded)] <no-wc>
 
 #bibliography("references.bib", title: [References])

@@ -100,3 +100,38 @@ numpages = {8}
   urldate = "2025-02-27",
   year="2019",
 }
+
+@inproceedings{aesop,
+author = {Limperg, Jannis and From, Asta Halkj\ae{}r},
+title = {Aesop: White-Box Best-First Proof Search for Lean},
+year = {2023},
+isbn = {9798400700262},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3573105.3575671},
+doi = {10.1145/3573105.3575671},
+abstract = {We present Aesop, a proof search tactic for the Lean 4 interactive
+theorem prover. Aesop performs a tree-based search over a user-specified
+set of proof rules. It supports safe and unsafe rules and uses a best-first
+search strategy with customisable prioritisation. Aesop also allows users
+to register custom normalisation rules and integrates Lean's simplifier to
+support equational reasoning. Many details of Aesop's search procedure are
+designed to make it a white-box proof automation tactic, meaning that users
+should be able to easily predict how their rules will be applied, and thus how
+powerful and fast their Aesop invocations will be.
+
+Since we use a best-first search strategy, it is not obvious how to handle
+metavariables which appear in multiple goals. The most common strategy for
+dealing with metavariables relies on backtracking and is therefore not
+suitable for best-first search. We give an algorithm which addresses this
+issue. The algorithm works with any search strategy, is independent of the
+underlying logic and makes few assumptions about how rules interact with
+metavariables. We conjecture that with a fair search strategy, the algorithm
+is as complete as the given set of rules allows.},
+booktitle = {Proceedings of the 12th ACM SIGPLAN International Conference on Certified Programs and Proofs},
+pages = {253–266},
+numpages = {14},
+keywords = {Lean, deductive verification, interactive theorem proving, proof search, tactic, type theory},
+location = {Boston, MA, USA},
+series = {CPP 2023}
+}
