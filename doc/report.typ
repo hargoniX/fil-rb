@@ -65,7 +65,7 @@ Furthermore, we also show that our implementation has close performance compared
 in @performance.
 
 
-= RbTree Framework <framework>
+= Red-Black Tree Framework <framework>
 The goal of our formalization is to provide an implementation of sets as red-black trees with a complete
 surface level API such that users of the data structure likely never have to peek into the internals
 to do a proof. For this approach we combine the general approach taken by the Lean standard library
@@ -77,8 +77,8 @@ red-black trees from @nipkowtrees. Our design takes the following steps:
 3. Connect red-black trees to a model of sorted lists and use this model to verify the surface level
    API of the tree in @surface.
 
-== Raw RbTree Defintions <raw> 
-For the underlying RbTree constructor, we chose the following definition:#note[typo:Definitions, in title]
+== Raw Red-Black Tree Defintions <raw>
+For the underlying red-black tree constructor, we choose the following definition:
 ```lean
 inductive Raw (α : Type u) where
   | nil : Raw α
@@ -90,8 +90,7 @@ where `Color` is an inductive type of either `black` or `red`, which enables Lea
 In addition, this definition is specifically geared towards _functional but in-place_ (FBIP) usage.
 To showcase this, let us consider some alternative ways to define it:
 
-#note[It's a tree containing a tuple of data and color]
-1. #cite(<nipkowFDSA>, form: "prose") defines a RbTree by a tuple of a normal tree and a color.
+1. @nipkowFDSA defines a red-black tree by storing a tuple of data and color within a normal tree.
    ```sml
    datatype 'a tree = Leaf | Node ('a tree) 'a ('a tree)
    type_synonym 'a rbt = ('a × color) tree
@@ -104,44 +103,43 @@ To showcase this, let us consider some alternative ways to define it:
    have an acceptable overhead (storing an additional 8 bit field) compared to calling the
    allocator more often than necessary.
 
-The most basic operations for any datastructure#note[Grammar:data structure, with a whitespace] are `insert`, `erase` and `contains`.
+The most basic operations for any data structure are `insert`, `erase` and `contains`.
 Defining `contains` for any binary search tree is a very simple recursive function.
 
 // TODO: do we want to explain how balancing works and how they operate on traversal?
-Insertion is an adaption of #cite(<nipkowFDSA>, form: "prose") to Lean4,
-which is mostly #cite(<Okasaki1999>, form: "prose") simple, functional approach to balancing.
+Insertion is an adaption of @nipkowFDSA to Lean4,
+which is mostly the simple, functional approach to balancing demonstrated in @Okasaki1999.
 
 Deletion is defined by Nipkow with the help of the partial function `split_min`.
 It enables us to find the best-suited subtree to replace the node we want to remove from the tree.
 This is a rather involved routine with lots of control branches.
-Instead, we adapted deletion from the `RBMap` defined in the Lean4 Core Repository @leancorelib to our simpler Tree.
+Instead, we adapt deletion from the `RBMap` defined in the Lean4 Core Repository @leancorelib to our simpler red-black tree.
 They make use of the function `appendTrees`,
 which is a recursive definition to combine the right-most subtree of the left subtree with the left-most subtree of the right subtree,
 while also correcting the colors.
-This seemed more straightforward to reason about, so we choose#note(side:left)["chose" instead of "choose" for tense consistency above] to copy that one.
+This seems more straightforward to reason about, so we choose to copy that one.
 
 == Invariants <invariants>
-A RbTree differentiates itself from a normal binary search tree through two major invariants:
-#note[It feels a bit weird to say it differentiates itself, we should make clear that these
-invariants hold in addition.]
+A red-black tree is a colored extension to a normal binary search tree with two major new invariants:
+#note[I am still not happy with this introduction, but the later note on restructuring probably will impact this sentence as well]
 
 1. `ChildInv`: Every red node has only black children, where all leaves are considered black.
 2. `HeightInv`: Every path from a given node to any of its leaves goes through the same number of black nodes.
 
-The combination of those two allows us to prove a logarithmic height upper bound which implies $O(log(n))$
-performance characteristica. #note[Implies them for what]
-Thus our job is to show that the empty RbTree and any operation on a RbTree uphold those invariants.
+The combination of those two allow us to prove a logarithmic height upper bound which implies $O(log(n))$
+performance characteristica for `insert`, `erase` and `contains`.
+Thus our job is to show that the empty red-black tree and any operation on a red-black tree uphold those invariants.
 
-We followed the approach#note(side:left)[Grammar: laid out] layed out by #cite(<nipkowFDSA>, form: "prose"), #note
+We follow the approach laid out by @nipkowFDSA
 where he introduces two tricks to ideas to prove these invariants.
 
-First, he describes a weaker child invariant for RbTrees,
-where only the childs of a node have to preserve the invariant.#note(side:left)[Grammar:children]
+Firstly, he describes a weaker child invariant for red-black trees,
+where only the children of a node have to preserve the invariant.
 ```lean
 def ChildInv2 (t : Raw α) : Prop :=
   ChildInv (paintColor .black t)
 ```
-Since a lot of the operations paint the root of the tree afterwards black, #note[Grammar]
+Since `insert` and `erase` paint the new root of the tree black,
 it is easier to show `ChildInv2` and then upgrade it to `ChildInv` when required.
 
 Secondly, Nipkow introduces a sufficient condition for the `HeightInv`:
@@ -154,35 +152,32 @@ inductive HeightInv : Raw α → Prop where
 ```
 `blackHeightLeft` recursively traverses only the left subtree, and increments if the node is black.
 Since `HeightInv` traverses the complete tree we can still reach conclusions about all paths from the root,
-but this allows us to reason about the recursive cases more easily.#note(side:left)[logical sense in this paragraph not so clear: what would the "but" like to express here?  ]
-
-To prove that `insert` and `erase` preserve a combination of these invariants,
-we decomposed the theorem into lemmas about how the underlying functions preserve the invariants.#note[Suggest:There's no need to do a new paragraph, since they both talk about decomposition]
+therefore allowing us to reason about the recursive cases more easily.
 
 // Explain some considerations we had in mind for our simp set.
+To prove that `insert` and `erase` preserve a combination of these invariants,
+we decompose the theorem into lemmas about how the underlying functions preserve the invariants.
 This decomposition profits a lot from a strong `simp` set,
-where - beside the trivial properties about every function - we mostly tried to reduce the different functions to common terms,
+where - beside the trivial properties about every function - we mostly try to reduce the different functions to common terms,
 s.t. the proof automation - in this case `aesop` @aesop - can reason with the context about the goals.
 
 Since these functions have a lot of cases, it becomes quite repetitive to prove these subgoals without automation.
-So our development loop mostly consisted out of#note[maybe you want to say "out of unserstanding", but  "consist of" instead "consist out of"] understanding what the different branches were failing to prove automaticly#note(side:left)[Typo:automatically]
-and to implement these either as `simp` or `aesop`-specific theorem.
-But some properties are easier deconstructed than others.#note["are easier to deconstruct" instead of "are easier deconstructed"]
-Both of the RbTree-specific invariants are dependent on the color of the node, which is not the most obvious choice for `aesop` to casesplit on. #note(side:left)[casesplit is not a word, rather use split case as verb phrase]
+So the development loop mostly boils down to understanding what the different branches were failing to prove automatically
+and to implement these either as `simp` or `aesop`-specific theorems.
+But some properties are easier to deconstruct than others.
+Both of the red-black-tree-specific invariants are dependent on the color of the node,
+which is not the most obvious choice for `aesop` to do case distinction on.
 Also, there are code paths, where the invariants depend on each other,
 e.g. where we can deduce that a node is `red` since we know it is not a `black` node and due to `HeightInv` it also cannot be nil.
 These cases obviously require much more manual reasoning and a deeper understanding on the balance operation.
 
-
-#note(side:left)[This is not only essential for @surface but also to make sure that `contains` works correctly
-in the first place. Given that we proved this first and it is easier maybe this section should be
-higher?]
-Finally, it is essential for @surface to prove that operations on a RbTree preserve the `BST`-invariant,
+#note(side:left)[Given that we proved this first and it is easier maybe this section should be higher? - I agree, but I didnt find a good transition the other way around. Will fix this evening]
+Finally, it is essential for @surface and a correctly working `contains` to prove that operations on a red-black tree preserve the `BST`-invariant,
 therefore letting us know that `inorder` results in a sorted list.
 In comparison to the other invariants, the `BST`-invariant is more straightforward to decompose since there is no branching over the colors.
 Therefore the same decomposition mechanism combined with reasonable `aesop`-calls
 are able to handle most of the proofs besides some transitivity.
-Since this invariant was the easiest to automate and also the easiest way to show that our RbTree-implementation has no bad code path,
+Since this invariant is the easiest to automate and also the easiest way to show that our red-black tree implementation has no bad code path,
 we focused on this as our first major goal.
 
 == Surface Level API <surface>
