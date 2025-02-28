@@ -1,13 +1,10 @@
-#import "@preview/fletcher:0.5.0" as fletcher: diagram, node, edge
-#import "@preview/codelst:2.0.0": sourcecode
-#import "@preview/curryst:0.1.1"
 #import "@preview/wordometer:0.1.4": word-count, total-characters
 #import "@preview/drafting:0.2.1": margin-note
 #import "template.typ": *
 
 #let note = margin-note
 
-#let target_date = datetime(year: 2025, month: 3, day: 3)
+#let target_date = datetime(year: 2025, month: 3, day: 2)
 #show : official.with(
   title: [
     Design Report:#linebreak()
@@ -19,7 +16,7 @@
   submission_date: target_date.display("[month repr:long] [day], [year]"),
 )
 
-#show: word-count.with(exclude: (strike, raw.where(block: true), <no-wc>))
+#show: word-count.with(exclude: (raw.where(block: true), <no-wc>))
 #show figure.caption : set text(10pt)
 
 #show raw.where(lang: "lean"): r => {
@@ -45,8 +42,8 @@ which is complex to implement, requiring careful handling of pointers,
 parent-child relationships, and rotations to maintain balance.
 The insertion algorithm was ported to a more functional version in @Okasaki1999,
 using recursion and pattern matching to enforce the two crucial red-black invariants:
-- Color Invariant: No red node has a red parent. The root color and the empty red-black tree are considered as black.
-- Height Invariant: Every path from the root to an empty node contains the same number of black nodes.
+- Color Invariant: Every red node has only black children, where all leaves are considered black.
+- Height Invariant: Every path from a given node to any of its leaves goes through the same number of black nodes.
 
 In this report, we follow the method presented in @nipkowtrees to verify red-black trees as presented in
 @Okasaki1999 in Lean 4.
@@ -68,7 +65,7 @@ red-black trees from @nipkowtrees. Our design takes the following steps:
 3. Connect red-black trees to a model of sorted lists and use this model to verify the surface level
    API of the tree in @surface.
 
-== Raw Red-Black Tree Defintions <raw>
+== Raw Red-Black Tree Definitions <raw>
 For the underlying red-black tree constructor, we choose the following definition:
 ```lean
 inductive Raw (α : Type u) where
@@ -98,7 +95,6 @@ To showcase this, let us consider some alternative ways to define it:
 The most basic operations for any data structure are `insert`, `erase` and `contains`.
 Defining `contains` for any binary search tree is a very simple recursive function.
 
-// TODO: do we want to explain how balancing works and how they operate on traversal?
 Insertion is an adaption of @nipkowFDSA to Lean4,
 which is mostly the simple, functional approach to balancing demonstrated in @Okasaki1999.
 
@@ -112,9 +108,30 @@ while also correcting the colors.
 This seems more straightforward to reason about, so we choose to copy that one.
 
 == Invariants <invariants>
-A red-black tree is a colored extension to a normal binary search tree with two major new invariants:
-#note[I am still not happy with this introduction, but the later note on restructuring probably will impact this sentence as well]
+=== Binary Search Tree Invariant <bstinv>
+We describe the most fundamental invariant of any binary search tree with the following `BST`-invariant:
+```lean
+inductive BST : Raw α → Prop where
+  | nil : BST .nil
+  | node (hleft1 : ∀ x ∈ left, x < data) (hleft2 : BST left)
+         (hright1 : ∀ x ∈ right, data < x) (hright2 : BST right) :
+         BST (.node left data color right)
+ ```
+It is essential for a correctly working `contains` to prove that both `insert` and `erase` preserve this invariant.
+Otherwise we wouldn't know how to traverse the tree to find an element.
+By decomposing the theorems about the operations into lemmas about how the underlying functions preserve the invariants,
+we can profit a lot from a well developed `simp`-set.
+Since these functions have a lot of similar cases, it would become quite repetitive to prove the subgoals without the help of automation.
+Therefore we try to reduce all the used functions to common terms and functions,
+s.t. the proof automation - in this case `aesop` @aesop - can reason with the context about the goals.
+Afterwards the development loop mostly boils down to understanding where the proof automation gets stuck,
+and then extend either `simp` or `aesop` with new theorems to enable more progress or introduce some case specific fact about e.g. transitivity.
 
+Since this invariant is the easiest to automate due to the straightforward structure and also the easiest way to show that our red-black tree implementation has no bad code path,
+we focused and accomplished this as our first major goal.
+
+=== Red Black Tree Invariant <rbinv>
+To reiterate, a red-black tree is a colored extension of a normal binary search tree with two extra invariants:
 1. `ChildInv`: Every red node has only black children, where all leaves are considered black.
 2. `HeightInv`: Every path from a given node to any of its leaves goes through the same number of black nodes.
 
@@ -145,32 +162,13 @@ inductive HeightInv : Raw α → Prop where
 Since `HeightInv` traverses the complete tree we can still reach conclusions about all paths from the root,
 therefore allowing us to reason about the recursive cases more easily.
 
-// Explain some considerations we had in mind for our simp set.
-To prove that `insert` and `erase` preserve both of these invariants,
-we decompose the theorem into lemmas about how the underlying functions preserve the invariants.
-This decomposition profits a lot from a strong `simp` set,
-where - beside the trivial properties about every function - we mostly try to reduce the different functions to common terms,
-s.t. the proof automation - in this case `aesop` @aesop - can reason with the context about the goals.
-
-Since these functions have a lot of cases, it becomes quite repetitive to prove these subgoals without automation.
-So the development loop mostly boils down to understanding where the proof automation gets stuck
-and then extend either `simp` or `aesop` with new theorems to enable more progress. However we did
-observe situations where just equipping `simp` or `aesop` with more knowledge does not solve a
-goal. For example both of the red-black-tree-specific invariants are dependent on the color
-of the node. However we do not wish to generally case split on the color as this is only necessary
-for very particular cases. Beyond this, there exist code paths, where the invariants depend on each other,
-e.g. where we can deduce that a node is `red` since we know it is not a `black` node and due to
-`HeightInv` it also cannot be `nil`. These cases require some manual intervention before letting
-`simp` or `aesop` solve the remainder.
-
-#note(side:left)[Given that we proved this first and it is easier maybe this section should be higher? - I agree, but I didnt find a good transition the other way around. Will fix this evening]
-Finally, it is essential for @surface and a correctly working `contains` to prove that operations on a red-black tree preserve the `BST`-invariant,
-therefore letting us know that `inorder` results in a sorted list.
-In comparison to the other invariants, the `BST`-invariant is more straightforward to decompose since there is no branching over the colors.
-Therefore the same decomposition mechanism combined with reasonable `aesop`-calls
-are able to handle most of the proofs besides some transitivity.
-Since this invariant is the easiest to automate and also the easiest way to show that our red-black tree implementation has no bad code path,
-we focused on this as our first major goal.
+In comparison to the `BST`-invariant, these invariants are less straightforward to prove since there is branching over the colors.
+Therefore the decomposition and the `simp` lemmas require more thought,
+but are in turn also less useful without explicit information about the color of a node.
+Since we do not wish to generally case split on the color - as this is only necessary for particular cases -, we had a harder time fully automating the proofs.
+Beyond this, there exist code paths, where the invariants depend on each other,
+e.g. where we can deduce that a node is `red` since we know it is not a `black` node and due to `HeightInv` it also cannot be `nil`.
+These cases require some manual intervention before letting `simp` or `aesop` solve the remainder.
 
 == Surface Level API <surface>
 After providing the basic operations and verifying that they preserve the invariants we can pack
@@ -271,6 +269,6 @@ maps or dependent maps as has been shown in the Lean standard library for both h
 containers. Beyond this we can add more operations such as `min?`, `max?`, `ForIn` etc. very easily
 by repeating the design process for that single operation.
 
-#[#ctext([*DELETE THIS BEFORE SUBMITTING*], red): Total characters: #total-characters (titlepage, code and this line excluded)] <no-wc>
+#[Total counted characters without code blocks: #total-characters] <no-wc>
 
 #bibliography("references.bib", title: [References])

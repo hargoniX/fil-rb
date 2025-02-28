@@ -105,6 +105,6 @@
 
   // Main Matter
   counter(page).update(1)
-  set page(numbering: "1", number-align: center, margin:4cm)
+  set page(numbering: "1", number-align: center)
   body
 }
