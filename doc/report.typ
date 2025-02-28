@@ -78,7 +78,8 @@ inductive Raw (α : Type u) where
 where `Color` is an inductive type of either `black` or `red`, which enables Lean to encode it as just an 8 bit integer stored within the node.
 #footnote[https://lean-lang.org/lean4/doc/dev/ffi.html#translating-types-from-lean-to-c]
 
-In addition, this definition is specifically geared towards _functional but in-place_ (FBIP) usage.
+In addition, this definition is specifically geared towards _functional but in-place_ (FBIP) usage,
+a compiler optimization for Lean 4 first described in @immutablebean.
 To showcase this, let us consider some alternative ways to define it:
 
 1. @nipkowFDSA defines a red-black tree by storing a tuple of data and color within a normal tree.
@@ -89,7 +90,7 @@ To showcase this, let us consider some alternative ways to define it:
    This introduces the overhead of an additional pointer indirection.
 
 2. Directly encode the color in different tree constructors.\
-   This will destroy FBIP as the implementation within Lean only reuses memory across the same constructor for destructive updates @immutablebean.
+   This will destroy FBIP as the implementation within Lean only reuses memory across the same constructor for destructive updates.
    Thus, recoloring a node after an operation would not fall under FBIP. We believe our approach to
    have an acceptable overhead (storing an additional 8 bit field) compared to calling the
    allocator more often than necessary.
