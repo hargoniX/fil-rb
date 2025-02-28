@@ -31,30 +31,29 @@
 }
 
 = Introduction <introduction>
-Firstly introduced in @rbtOriginal, red-black trees are self-balancing binary search trees 
-with time complexity of $O(log(n))$ for operations `lookup()`, `insert()`, `delete()`, etc.
-They perform over the non-self balancing trees, which degenerate as linked lists with time complexity of $O(n)$ in the worst case.
+Initially introduced in @rbtOriginal, red-black trees are self-balancing binary search trees
+with time complexity of $O(log(n))$ for insertion, deletion and lookup.
+They perform better than naive binary search trees, which degenerate as linked lists with time complexity of $O(n)$ in the worst case.
 
-The original implementation of red-black trees is rather imperative in nature,
-which is complex to implement, requiring careful handling of pointers, 
-parent-child relationships, and rotations to maintain balance. 
-The first functional version of red-black trees insertion algorithm@Okasaki1999 
-is implemented simply and elegantly in Haskell in a more descriptive manner, 
-which uses recursion and pattern matching to enforce the two crucial invariants.
-They are:
-- Color Invariant: No red node has a red parent. The root color and the empty RbTree are considered as black.
-- Height Invariant: Every path from the root to an empty node contains the same number of black nodes.
-
-Red-black trees have been already widely used in computer science where efficient ordered data storage and retrieval are needed,
+For this reason red-black trees are widely used in computer science where efficient ordered data storage and retrieval are needed,
 e.g. in the standard library implementation in different programming languages
 (`std::map` from C++, `TreeMap` from Java Collections Framework)
 and in the virtual memory management in operating systems (`mm_struct` in the Linux kernel).
 
-In this report, we follow the method from @nipkowtrees to build our formalization of red-black trees in Lean4.
+The original implementation of red-black trees is rather imperative in nature,
+which is complex to implement, requiring careful handling of pointers,
+parent-child relationships, and rotations to maintain balance.
+The insertion algorithm was ported to a more functional version in @Okasaki1999,
+using recursion and pattern matching to enforce the two crucial red-black invariants:
+- Color Invariant: No red node has a red parent. The root color and the empty red-black tree are considered as black.
+- Height Invariant: Every path from the root to an empty node contains the same number of black nodes.
+
+In this report, we follow the method presented in @nipkowtrees to verify red-black trees as presented in
+@Okasaki1999 in Lean 4.
 We provide a verified implementation of red-black trees and a general framework to prove properties about
 operations on red-black trees in @framework.
-Furthermore, we also show that our implementation has close performance compared with C++ `std::map`
-in @performance.
+Furthermore, we also show that our implementation is reasonably close to C++ `std::map` in terms of
+performance in @performance.
 
 
 = Red-Black Tree Framework <framework>
