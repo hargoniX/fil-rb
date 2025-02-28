@@ -31,36 +31,28 @@
 }
 
 = Introduction <introduction>
-Red-Black Trees (RbTree) #note(side:left)[Let's stick to just "red-black tree"] are self-balancing binary search
-trees with time complexity of $O(log(n))$. #note[Time complexity for which operations etc.]
-This performance is ensured by balance maintaining via color properties #note(side:left)[Color properties
-doesn't really mean anything to people that don't already know rbtrees. Instead we should probably
-say something like, rotations guided by colors of the nodes.] and rotations.
-Without balancing, it #note["It" is not really clear here, we should explain that non self balancing
-trees degenerate in this fashion] will degenerate to $O(n)$ as a linked list in the worst case.
+Firstly introduced in @rbtOriginal, red-black trees are self-balancing binary search trees 
+with time complexity of $O(log(n))$ for operations `lookup()`, `insert()`, `delete()`, etc.
+They perform over the non-self balancing trees, which degenerate as linked lists with time complexity of $O(n)$ in the worst case.
 
-Since their first introduction by Guibas and Sedegewick@rbtOriginal #note[Just stick to @rbtOriginal for now no spelling out the authors yourself, same with other citations],
-RbTrees have been widely used in computer science where efficient ordered data storage and retrieval are needed,
-e.g. in the standard library implementation in different programming languages
-(`std::map` from C++, `TreeMap` from Java Collections Framework)
-and in the virtual memory management in operating systems (`mm_struct` in the Linux kernel).
-
-Besides Guibas and Sedgewick, #note(side:left)[This should explain first that the initial algorithm is rather
-imperative in nature and that it was thus necessary for Okasaki to do some work towards this.]
-Okasaki has firstly come up with an functional version of RbTree insertion algorithm,
-which is implemented simply and elegantly in Haskell@Okasaki1999.
-Unlike an imperative implementation of RbTree
-which handles detailed operations on the tree structure,
-the functional version focuses on enforcing the invariants, #note[This is a bit weird to say,
-obviously the imperative code also sticks to the invariants]
-which are crucial for maintaining balance, in a more descriptive manner.
+The original implementation of red-black trees is rather imperative in nature,
+which is complex to implement, requiring careful handling of pointers, 
+parent-child relationships, and rotations to maintain balance. 
+The first functional version of red-black trees insertion algorithm@Okasaki1999 
+is implemented simply and elegantly in Haskell in a more descriptive manner, 
+which uses recursion and pattern matching to enforce the two crucial invariants.
 They are:
 - Color Invariant: No red node has a red parent. The root color and the empty RbTree are considered as black.
 - Height Invariant: Every path from the root to an empty node contains the same number of black nodes.
 
-In this report, we follow the method from @nipkowtrees to build our formalization of RbTrees in Lean4.
-We provide a verified implementation of RbTrees and a general framework to prove properties about
-operations on RbTrees in @framework.
+Red-black trees have been already widely used in computer science where efficient ordered data storage and retrieval are needed,
+e.g. in the standard library implementation in different programming languages
+(`std::map` from C++, `TreeMap` from Java Collections Framework)
+and in the virtual memory management in operating systems (`mm_struct` in the Linux kernel).
+
+In this report, we follow the method from @nipkowtrees to build our formalization of red-black trees in Lean4.
+We provide a verified implementation of red-black trees and a general framework to prove properties about
+operations on red-black trees in @framework.
 Furthermore, we also show that our implementation has close performance compared with C++ `std::map`
 in @performance.
 
