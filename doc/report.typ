@@ -77,8 +77,8 @@ red-black trees from @nipkowtrees. Our design takes the following steps:
 3. Connect red-black trees to a model of sorted lists and use this model to verify the surface level
    API of the tree in @surface.
 
-== Raw RbTree Defintions <raw>
-For the underlying RbTree constructor, we chose the following definition:
+== Raw RbTree Defintions <raw> 
+For the underlying RbTree constructor, we chose the following definition:#note[typo:Definitions, in title]
 ```lean
 inductive Raw (α : Type u) where
   | nil : Raw α
@@ -104,7 +104,7 @@ To showcase this, let us consider some alternative ways to define it:
    have an acceptable overhead (storing an additional 8 bit field) compared to calling the
    allocator more often than necessary.
 
-The most basic operations for any datastructure are `insert`, `erase` and `contains`.
+The most basic operations for any datastructure#note[Grammar:data structure, with a whitespace] are `insert`, `erase` and `contains`.
 Defining `contains` for any binary search tree is a very simple recursive function.
 
 // TODO: do we want to explain how balancing works and how they operate on traversal?
@@ -118,7 +118,7 @@ Instead, we adapted deletion from the `RBMap` defined in the Lean4 Core Reposito
 They make use of the function `appendTrees`,
 which is a recursive definition to combine the right-most subtree of the left subtree with the left-most subtree of the right subtree,
 while also correcting the colors.
-This seemed more straightforward to reason about, so we choose to copy that one.
+This seemed more straightforward to reason about, so we choose#note(side:left)["chose" instead of "choose" for tense consistency above] to copy that one.
 
 == Invariants <invariants>
 A RbTree differentiates itself from a normal binary search tree through two major invariants:
@@ -132,11 +132,11 @@ The combination of those two allows us to prove a logarithmic height upper bound
 performance characteristica. #note[Implies them for what]
 Thus our job is to show that the empty RbTree and any operation on a RbTree uphold those invariants.
 
-We followed the approach layed out by #cite(<nipkowFDSA>, form: "prose"),
+We followed the approach#note(side:left)[Grammar: laid out] layed out by #cite(<nipkowFDSA>, form: "prose"), #note
 where he introduces two tricks to ideas to prove these invariants.
 
 First, he describes a weaker child invariant for RbTrees,
-where only the childs of a node have to preserve the invariant.
+where only the childs of a node have to preserve the invariant.#note(side:left)[Grammar:children]
 ```lean
 def ChildInv2 (t : Raw α) : Prop :=
   ChildInv (paintColor .black t)
@@ -154,10 +154,10 @@ inductive HeightInv : Raw α → Prop where
 ```
 `blackHeightLeft` recursively traverses only the left subtree, and increments if the node is black.
 Since `HeightInv` traverses the complete tree we can still reach conclusions about all paths from the root,
-but this allows us to reason about the recursive cases more easily.
+but this allows us to reason about the recursive cases more easily.#note(side:left)[logical sense in this paragraph not so clear: what would the "but" like to express here?  ]
 
 To prove that `insert` and `erase` preserve a combination of these invariants,
-we decomposed the theorem into lemmas about how the underlying functions preserve the invariants.
+we decomposed the theorem into lemmas about how the underlying functions preserve the invariants.#note[Suggest:There's no need to do a new paragraph, since they both talk about decomposition]
 
 // Explain some considerations we had in mind for our simp set.
 This decomposition profits a lot from a strong `simp` set,
@@ -165,16 +165,16 @@ where - beside the trivial properties about every function - we mostly tried to 
 s.t. the proof automation - in this case `aesop` @aesop - can reason with the context about the goals.
 
 Since these functions have a lot of cases, it becomes quite repetitive to prove these subgoals without automation.
-So our development loop mostly consisted out of understanding what the different branches were failing to prove automaticly
+So our development loop mostly consisted out of#note[maybe you want to say "out of unserstanding", but  "consist of" instead "consist out of"] understanding what the different branches were failing to prove automaticly#note(side:left)[Typo:automatically]
 and to implement these either as `simp` or `aesop`-specific theorem.
-But some properties are easier deconstructed than others.
-Both of the RbTree-specific invariants are dependent on the color of the node, which is not the most obvious choice for `aesop` to casesplit on.
+But some properties are easier deconstructed than others.#note["are easier to deconstruct" instead of "are easier deconstructed"]
+Both of the RbTree-specific invariants are dependent on the color of the node, which is not the most obvious choice for `aesop` to casesplit on. #note(side:left)[casesplit is not a word, rather use split case as verb phrase]
 Also, there are code paths, where the invariants depend on each other,
 e.g. where we can deduce that a node is `red` since we know it is not a `black` node and due to `HeightInv` it also cannot be nil.
 These cases obviously require much more manual reasoning and a deeper understanding on the balance operation.
 
 
-#note[This is not only essential for @surface but also to make sure that `contains` works correctly
+#note(side:left)[This is not only essential for @surface but also to make sure that `contains` works correctly
 in the first place. Given that we proved this first and it is easier maybe this section should be
 higher?]
 Finally, it is essential for @surface to prove that operations on a RbTree preserve the `BST`-invariant,
