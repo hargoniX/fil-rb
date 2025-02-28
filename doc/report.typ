@@ -131,17 +131,16 @@ performance characteristica for `insert`, `erase` and `contains`.
 Thus our job is to show that the empty red-black tree and any operation on a red-black tree uphold those invariants.
 
 We follow the approach laid out by @nipkowFDSA
-where he introduces two tricks to ideas to prove these invariants.
-
-Firstly, he describes a weaker child invariant for red-black trees,
+where he introduces two tricks to prove these invariants.
+First, he describes a weaker child invariant for red-black trees,
 where only the children of a node have to preserve the invariant.
 ```lean
 def ChildInv2 (t : Raw α) : Prop :=
   ChildInv (paintColor .black t)
 ```
-Since `insert` and `erase` paint the new root of the tree black,
-it is easier to show `ChildInv2` and then upgrade it to `ChildInv` when required.
-
+This weaker invariant is interesting as the internal recursive functions of `insert` and `erase`
+do not maintain `ChildInv`. However they maintain `ChildInv2` and both `insert` and `erase` paint
+the root black as a final step, allowing us to recover `ChildInv` from `ChildInv2`.
 Secondly, Nipkow introduces a sufficient condition for the `HeightInv`:
 ```lean
 inductive HeightInv : Raw α → Prop where
@@ -155,21 +154,22 @@ Since `HeightInv` traverses the complete tree we can still reach conclusions abo
 therefore allowing us to reason about the recursive cases more easily.
 
 // Explain some considerations we had in mind for our simp set.
-To prove that `insert` and `erase` preserve a combination of these invariants,
+To prove that `insert` and `erase` preserve both of these invariants,
 we decompose the theorem into lemmas about how the underlying functions preserve the invariants.
 This decomposition profits a lot from a strong `simp` set,
 where - beside the trivial properties about every function - we mostly try to reduce the different functions to common terms,
 s.t. the proof automation - in this case `aesop` @aesop - can reason with the context about the goals.
 
 Since these functions have a lot of cases, it becomes quite repetitive to prove these subgoals without automation.
-So the development loop mostly boils down to understanding what the different branches were failing to prove automatically
-and to implement these either as `simp` or `aesop`-specific theorems.
-But some properties are easier to deconstruct than others.
-Both of the red-black-tree-specific invariants are dependent on the color of the node,
-which is not the most obvious choice for `aesop` to do case distinction on.
-Also, there are code paths, where the invariants depend on each other,
-e.g. where we can deduce that a node is `red` since we know it is not a `black` node and due to `HeightInv` it also cannot be nil.
-These cases obviously require much more manual reasoning and a deeper understanding on the balance operation.
+So the development loop mostly boils down to understanding where the proof automation gets stuck
+and then extend either `simp` or `aesop` with new theorems to enable more progress. However we did
+observe situations where just equipping `simp` or `aesop` with more knowledge does not solve a
+goal. For example both of the red-black-tree-specific invariants are dependent on the color
+of the node. However we do not wish to generally case split on the color as this is only necessary
+for very particular cases. Beyond this, there exist code paths, where the invariants depend on each other,
+e.g. where we can deduce that a node is `red` since we know it is not a `black` node and due to
+`HeightInv` it also cannot be `nil`. These cases require some manual intervention before letting
+`simp` or `aesop` solve the remainder.
 
 #note(side:left)[Given that we proved this first and it is easier maybe this section should be higher? - I agree, but I didnt find a good transition the other way around. Will fix this evening]
 Finally, it is essential for @surface and a correctly working `contains` to prove that operations on a red-black tree preserve the `BST`-invariant,
@@ -197,14 +197,14 @@ provide:
 
 By combining all of these lemmas into a custom simp set we can build a tactic `simp_to_model` that
 translates arbitrary propositions about the surface level API into propositions about sorted lists.
-As these propositions are usually provable much easier than ones about red-black trees directly
+As these propositions are usually provable much easier than ones about red-black trees directly,
 it becomes much easier to both build the initial surface level API but also extend on it later on
 if necessary.
 
 Now that we have all tools to make proofs about the behavior of red-black tree operations easy, the
 key question is what lemmas we need to prove in order to provide a complete API for users of our
 library. To determine this we use the API design approach by the Lean standard library
-team which considers how any operation in the API interacts with any operation any other operation
+team which considers how any operation in the API interacts with any other operation
 and provides one or more lemmas for that interaction. This leaves us with a lemma coverage as seen
 in @api-lemmas, all of which are proven either from each other or by `simp_to_model` and induction
 over sorted lists.
