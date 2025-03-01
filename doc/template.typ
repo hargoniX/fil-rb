@@ -83,7 +83,7 @@
   set enum(numbering: "1.", indent: 1em, spacing: 10pt, tight: false)
 
   show link: set text(fill: blue.darken(60%))
-  show raw: set text(font: "JuliaMono", size: 10pt)
+  show raw: set text(font: "JuliaMono", size: 9pt)
   show outline.entry.where(level: 1): it => {
     v(12pt, weak: true)
     strong(it)

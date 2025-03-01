@@ -124,7 +124,7 @@ we can profit a lot from a well developed `simp`-set.
 Since these functions have a lot of similar cases, it would become quite repetitive to prove the subgoals without the help of automation.
 Therefore we try to reduce all the used functions to common terms and functions,
 s.t. the proof automation - in this case `aesop` @aesop - can reason with the context about the goals.
-Afterwards the development loop mostly boils down to understanding where the proof automation gets stuck,
+Afterwards, the development loop mostly boils down to understanding where the proof automation gets stuck,
 and then extend either `simp` or `aesop` with new theorems to enable more progress or introduce some case specific fact about e.g. transitivity.
 
 Since this invariant is the easiest to automate due to the straightforward structure and also the easiest way to show that our red-black tree implementation has no bad code path,
@@ -132,16 +132,17 @@ we focused and accomplished this as our first major goal.
 
 === Red Black Tree Invariant <rbinv>
 To reiterate, a red-black tree is a colored extension of a normal binary search tree with two extra invariants:
+
 1. `ChildInv`: Every red node has only black children, where all leaves are considered black.
 2. `HeightInv`: Every path from a given node to any of its leaves goes through the same number of black nodes.
 
-The combination of those two allow us to prove a logarithmic height upper bound which implies $O(log(n))$
+The combination of both allow us to prove a logarithmic height upper bound which implies $O(log(n))$
 performance characteristica for `insert`, `erase` and `contains`.
-Thus our job is to show that the empty red-black tree and any operation on a red-black tree uphold those invariants.
+Thus, our job is to show that the empty red-black tree and any operation on a red-black tree uphold those invariants.
 
 We follow the approach laid out by @nipkowFDSA
 where he introduces two tricks to prove these invariants.
-First, he describes a weaker child invariant for red-black trees,
+Firstly, he describes a weaker child invariant for red-black trees,
 where only the children of a node have to preserve the invariant.
 ```lean
 def ChildInv2 (t : Raw α) : Prop :=
@@ -150,6 +151,7 @@ def ChildInv2 (t : Raw α) : Prop :=
 This weaker invariant is interesting as the internal recursive functions of `insert` and `erase`
 do not maintain `ChildInv`. However they maintain `ChildInv2` and both `insert` and `erase` paint
 the root black as a final step, allowing us to recover `ChildInv` from `ChildInv2`.
+
 Secondly, Nipkow introduces a sufficient condition for the `HeightInv`:
 ```lean
 inductive HeightInv : Raw α → Prop where
@@ -167,7 +169,7 @@ Therefore the decomposition and the `simp` lemmas require more thought,
 but are in turn also less useful without explicit information about the color of a node.
 Since we do not wish to generally case split on the color - as this is only necessary for particular cases -, we had a harder time fully automating the proofs.
 Beyond this, there exist code paths, where the invariants depend on each other,
-e.g. where we can deduce that a node is `red` since we know it is not a `black` node and due to `HeightInv` it also cannot be `nil`.
+e.g. where we can deduce that a node is `red` since we know it not to be a `black` node and neither `nil` due to `HeightInv`.
 These cases require some manual intervention before letting `simp` or `aesop` solve the remainder.
 
 == Surface Level API <surface>
@@ -269,6 +271,7 @@ maps or dependent maps as has been shown in the Lean standard library for both h
 containers. Beyond this we can add more operations such as `min?`, `max?`, `ForIn` etc. very easily
 by repeating the design process for that single operation.
 
-#[Total counted characters without code blocks: #total-characters] <no-wc>
+#v(15pt)
+#[Total characters counted excluding code blocks: #total-characters] <no-wc>
 
 #bibliography("references.bib", title: [References])
