@@ -128,7 +128,7 @@ Afterwards, the development loop mostly boils down to understanding where the pr
 and then extend either `simp` or `aesop` with new theorems to enable more progress or introduce some case specific fact about e.g. transitivity.
 
 Since this invariant is the easiest to automate due to the straightforward structure and also the easiest way to show that our red-black tree implementation has no bad code path,
-we focused and accomplished this as our first major goal.
+we focused on and accomplished this as our first major goal.
 
 === Red Black Tree Invariant <rbinv>
 To reiterate, a red-black tree is a colored extension of a normal binary search tree with two extra invariants:
@@ -141,8 +141,8 @@ performance characteristica for `insert`, `erase` and `contains`.
 Thus, our job is to show that the empty red-black tree and any operation on a red-black tree uphold those invariants.
 
 We follow the approach laid out by @nipkowFDSA
-where he introduces two tricks to prove these invariants.
-Firstly, he describes a weaker child invariant for red-black trees,
+which introduces two tricks to prove these invariants.
+Firstly, they describe a weaker child invariant for red-black trees,
 where only the children of a node have to preserve the invariant.
 ```lean
 def ChildInv2 (t : Raw α) : Prop :=
@@ -152,7 +152,7 @@ This weaker invariant is interesting as the internal recursive functions of `ins
 do not maintain `ChildInv`. However they maintain `ChildInv2` and both `insert` and `erase` paint
 the root black as a final step, allowing us to recover `ChildInv` from `ChildInv2`.
 
-Secondly, Nipkow introduces a sufficient condition for the `HeightInv`:
+Secondly, they introduce a sufficient condition for the `HeightInv`:
 ```lean
 inductive HeightInv : Raw α → Prop where
   | nil : HeightInv .nil
